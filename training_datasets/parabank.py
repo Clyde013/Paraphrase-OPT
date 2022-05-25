@@ -1,5 +1,3 @@
-from datasets import Dataset, load_dataset
-
 '''
 README from parabank-2.0.zip
 
@@ -23,18 +21,24 @@ appear in ascending order of their bidirectional model scores (the lower the
 better), which we use to filter the bilingual resource used to generate ParaBank 2.
 '''
 
+from datasets import load_dataset
+from transformers import PreTrainedTokenizer, GPT2Tokenizer, DataCollatorForLanguageModeling
 
-def init_parabank_dataset(seed=69):
+
+def init_parabank_dataset(tokenizer: PreTrainedTokenizer, seed=69):
     """Initialises the parabank-2.0 paraphrase dataset in streaming mode.
 
     Parameters
     ----------
+    tokenizer: PreTrainedTokenizer
+        should be gpt2 tokenizer, will be used to tokenize the dataset
     seed: int
         seed for dataset shuffle order.
 
     Returns
     -------
     IterableDataset
+    Dataset is tokenized and splits source-target using the tokenizer EOS token.
     """
 
     url = "http://cs.jhu.edu/~vandurme/data/parabank-2.0.zip"
@@ -42,16 +46,23 @@ def init_parabank_dataset(seed=69):
     def preprocess(examples):
         # list of len batch
         batch = examples['text']
-        batch = [x.split('\t')[1:] for x in batch]
-        examples['text'] = batch
-        return examples
+        processed_batch = list()
+        for i in batch:
+            # split by \t (it is a tsv file) and omit the initial dual-condition score (it is useless)
+            i = i.split('\t')[1:]
+            # filter entries without paraphrases and split them with a '</s>' token to denote source-target
+            if len(i) > 1:
+                processed_batch.append(i[0] + tokenizer.eos_token + i[1])
+
+        outputs = tokenizer(
+            processed_batch,
+            truncation=True,
+            max_length=69,
+        )
+        return outputs
 
     dataset = load_dataset("text", data_files={"train": url}, streaming=True)['train']
     dataset = dataset.shuffle(seed=seed, buffer_size=10_000)
-    dataset = dataset.map(preprocess, batched=True)
+    dataset = dataset.map(preprocess, batched=True, remove_columns=['text'])
 
     return dataset
-
-
-dataset = init_parabank_dataset()
-print(list(dataset.take(5)))
