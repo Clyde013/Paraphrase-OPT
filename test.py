@@ -1,7 +1,8 @@
-from soft_prompt_opt import SoftOPTModelWrapper
-from training_datasets.parabank import init_parabank_dataset
+from pytorch_lightning import Trainer
+from soft_prompt_tuning.soft_prompt_opt import SoftOPTModelWrapper, ParaphraseOPT
+from training_datasets.parabank import ParabankDataModule
 
-from transformers import GPT2Tokenizer, Trainer, TrainingArguments, DataCollatorForLanguageModeling, OPTForCausalLM
+from transformers import GPT2Tokenizer, DataCollatorForLanguageModeling
 
 from tqdm import tqdm
 
@@ -11,28 +12,47 @@ from torch.utils.data import DataLoader
 
 torch.cuda.empty_cache()
 
-model = SoftOPTModelWrapper.from_pretrained("facebook/opt-350m")
+AVAIL_GPUS = min(1, torch.cuda.device_count())
+
+datamodule = ParabankDataModule("facebook/opt-350m", 32)
+datamodule.setup()
+model = ParaphraseOPT()
+
+print("TRAINING MODEL")
+trainer = Trainer(max_epochs=5, gpus=AVAIL_GPUS)
+trainer.fit(model, datamodule=datamodule)
+
+print("VALIDATING MODEL")
+trainer.validate(model, datamodule.val_dataloader())
+
+'''
 tokenizer = GPT2Tokenizer.from_pretrained("facebook/opt-350m")
-dataset = init_parabank_dataset(tokenizer).with_format("torch")
-data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=False)
+model = SoftOPTModelWrapper.from_pretrained("facebook/opt-350m")
 
-optimizer = optim.Adam(model.soft_embedding.wte.parameters())
-lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
+prompt = "Hey, are you conscious? Can you talk to me?"
+inputs = tokenizer(prompt, return_tensors="pt")
+print(inputs)
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-data_loader = DataLoader(dataset, collate_fn=data_collator, batch_size=1)
-model.train().to(device)
+# generate function
+print("generate function")
+outputs = model.generate(**inputs, max_length=35, use_cache=False)
+print(outputs)
+print(outputs.shape)
+decoded = tokenizer.batch_decode(outputs)
+print(decoded)
 
-for epoch in range(3):
-    dataset.set_epoch(epoch)
-    for i, batch in enumerate(tqdm(data_loader, total=5)):
-        if i == 5:
-            break
-        batch = {k: v.to(device) for k, v in batch.items()}
-        outputs = model(**batch)
-        loss = outputs[0]
-        loss.backward()
-        optimizer.step()
-        optimizer.zero_grad()
-        if i % 10 == 0:
-            print(f"loss: {loss}")
+# manual generation
+print("manual generation")
+print(inputs)
+print(inputs['input_ids'].shape)
+generate_ids = model(**inputs)
+logits = generate_ids.logits.detach().cpu()
+print(logits)
+print(logits.shape)
+next_token_logits = logits[:, -1, :]
+print(next_token_logits)
+print(next_token_logits.shape)
+next_token = torch.argmax(next_token_logits, dim=-1)
+print(next_token)
+print(tokenizer.batch_decode(torch.unsqueeze(next_token, 0)))
+'''

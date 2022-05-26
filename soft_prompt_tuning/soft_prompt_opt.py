@@ -1,10 +1,13 @@
 from transformers.models.opt.modeling_opt import *
-from soft_prompt_tuning.soft_embedding import SoftEmbedding
+from .soft_embedding import SoftEmbedding
+from pytorch_lightning import LightningModule
+from torch.optim import Adam
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
 class SoftOPTModelWrapper(OPTForCausalLM):
     """Wrapper class for OPTForCausalLM to add learnable embedding functionality
-    Simply initialise it from pretrained OPT weights files and it should work out of the box.
+    Simply initialise it with from_pretrained OPT files and it should work out of the box.
     """
     _keys_to_ignore_on_load_missing = [r"soft_embedding.wte.weight", r"soft_embedding.learned_embedding",
                                        r"lm_head.weight"]
@@ -42,8 +45,46 @@ class SoftOPTModelWrapper(OPTForCausalLM):
         """
 
         # concatenation of tensors have to happen on the same device
-        input_ids = torch.cat([torch.full((1, self.n_tokens), 50256).to(input_ids.device), input_ids], 1)
-        labels = torch.cat([torch.full((1, self.n_tokens), 50256).to(labels.device), labels], 1)
-        attention_mask = torch.cat([torch.full((1, self.n_tokens), 1).to(attention_mask.device), attention_mask], 1)
+        if input_ids is not None:
+            input_ids = torch.cat([torch.full((1, self.n_tokens), 50256).to(input_ids.device), input_ids], 1)
+        if labels is not None:
+            labels = torch.cat([torch.full((1, self.n_tokens), 50256).to(labels.device), labels], 1)
+        if attention_mask is not None:
+            attention_mask = torch.cat([torch.full((1, self.n_tokens), 1).to(attention_mask.device), attention_mask], 1)
 
         return super().forward(input_ids=input_ids, attention_mask=attention_mask, labels=labels, **kwargs)
+
+
+class ParaphraseOPT(LightningModule):
+    def __init__(self):
+        self.model = SoftOPTModelWrapper.from_pretrained("facebook/opt-350m")
+        # number of training examples sampled = total_steps * batch_size * grad_accumulation_batches
+        # self.total_steps = total_steps
+
+    def forward(self, **inputs):
+        return self.model(**inputs)
+
+    def training_step(self, batch, batch_idx):
+        outputs = self(**batch)
+        loss = outputs[0]
+        return loss
+
+    def validation_step(self, batch, batch_idx, dataloader_idx=0):
+        outputs = self(**batch)
+        val_loss, logits = outputs[:2]
+
+        # we care only about the last token being predicted
+        pred_token_logits = logits[:, -1, :]
+        pred_token = torch.argmax(pred_token_logits, dim=-1)
+
+        labels = batch["labels"][:, -1, :]
+
+        return {"loss": val_loss, "preds": pred_token, "labels": labels}
+
+    def configure_optimizers(self):
+        optimizer = Adam(self.model.soft_embedding.wte.parameters())
+        lr_scheduler = ReduceLROnPlateau(optimizer, 'min')
+
+        lr_scheduler = {"scheduler": lr_scheduler, "interval": "step", "frequency": 1}
+
+        return [optimizer], [lr_scheduler]

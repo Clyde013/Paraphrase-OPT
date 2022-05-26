@@ -20,49 +20,81 @@ last to "5". All sentences are raw text (untokenized). The reference sentences
 appear in ascending order of their bidirectional model scores (the lower the
 better), which we use to filter the bilingual resource used to generate ParaBank 2.
 '''
-
+from typing import Optional
 from datasets import load_dataset
 from transformers import PreTrainedTokenizer, GPT2Tokenizer, DataCollatorForLanguageModeling
+from pytorch_lightning import LightningDataModule, LightningModule, Trainer, seed_everything
+from torch.utils.data import DataLoader
 
-
-def init_parabank_dataset(tokenizer: PreTrainedTokenizer, seed=69):
-    """Initialises the parabank-2.0 paraphrase dataset in streaming mode.
-
-    Parameters
-    ----------
-    tokenizer: PreTrainedTokenizer
-        should be gpt2 tokenizer, will be used to tokenize the dataset
-    seed: int
-        seed for dataset shuffle order.
-
-    Returns
-    -------
-    IterableDataset
-    Dataset is tokenized and splits source-target using the tokenizer EOS token.
+class ParabankDataModule(LightningDataModule):
     """
+    LightningDataModule for parabank dataset for causal language modelling
+    """
+    parabank_url = "http://cs.jhu.edu/~vandurme/data/parabank-2.0.zip"
 
-    url = "http://cs.jhu.edu/~vandurme/data/parabank-2.0.zip"
+    def __init__(self, opt_name, batch_size, seed=69):
+        super().__init__()
+        self.opt_name = opt_name
+        self.batch_size = batch_size
+        self.seed = seed
 
-    def preprocess(examples):
-        # list of len batch
-        batch = examples['text']
-        processed_batch = list()
-        for i in batch:
-            # split by \t (it is a tsv file) and omit the initial dual-condition score (it is useless)
-            i = i.split('\t')[1:]
-            # filter entries without paraphrases and split them with a '</s>' token to denote source-target
-            if len(i) > 1:
-                processed_batch.append(i[0] + tokenizer.eos_token + i[1])
+        # init None to make pycharm happy
+        self.tokenizer = None
+        self.dataset = None
 
-        outputs = tokenizer(
-            processed_batch,
-            truncation=True,
-            max_length=69,
-        )
-        return outputs
+    def prepare_data(self) -> None:
+        # download and cache
+        GPT2Tokenizer.from_pretrained(self.opt_name)
 
-    dataset = load_dataset("text", data_files={"train": url}, streaming=True)['train']
-    dataset = dataset.shuffle(seed=seed, buffer_size=10_000)
-    dataset = dataset.map(preprocess, batched=True, remove_columns=['text'])
+    def setup(self, stage: Optional[str] = None) -> None:
+        # load tokenizer (should be cached)
+        self.tokenizer = GPT2Tokenizer.from_pretrained(self.opt_name, use_fast=False)
 
-    return dataset
+        # preprocess function for the dataset's entries
+        def preprocess(examples):
+            # list of len batch
+            batch = examples['text']
+            processed_batch = list()
+            for i in batch:
+                # split by \t (it is a tsv file) and omit the initial dual-condition score (it is useless)
+                i = i.split('\t')[1:]
+                # filter entries without paraphrases and split them with a '</s>' token to denote source-target
+                if len(i) > 1:
+                    processed_batch.append(i[0] + self.tokenizer.eos_token + i[1])
+
+            outputs = self.tokenizer(
+                processed_batch,
+                truncation=True,
+                max_length=69,
+            )
+            return outputs
+
+        # init dataset in streaming mode
+        self.dataset = load_dataset("text", data_files={"train": self.parabank_url}, streaming=True)['train']
+        # elements within buffer size will be shuffled as they are loaded in
+        self.dataset = self.dataset.shuffle(seed=self.seed, buffer_size=10_000)
+        # preprocessing will take place while being streamed by dataloader
+        self.dataset = self.dataset.map(preprocess, batched=True, remove_columns=['text'])
+        # ensure pytorch tensors are returned
+        self.dataset = self.dataset.with_format('pt')
+
+    # dataloaders are basically all the same since we cannot split a streamed dataset
+    def train_dataloader(self):
+        return DataLoader(self.dataset,
+                          batch_size=self.batch_size,
+                          collate_fn=DataCollatorForLanguageModeling(self.tokenizer, mlm=False))
+
+    def val_dataloader(self):
+        return DataLoader(self.dataset,
+                          batch_size=self.batch_size,
+                          collate_fn=DataCollatorForLanguageModeling(self.tokenizer, mlm=False))
+
+    def test_dataloader(self):
+        return DataLoader(self.dataset,
+                          batch_size=self.batch_size,
+                          collate_fn=DataCollatorForLanguageModeling(self.tokenizer, mlm=False))
+
+    def predict_dataloader(self):
+        return DataLoader(self.dataset,
+                          batch_size=self.batch_size,
+                          collate_fn=DataCollatorForLanguageModeling(self.tokenizer, mlm=False))

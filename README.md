@@ -25,7 +25,6 @@ have to alter the loss function such that only loss after the <sep> token counts
 
 TODO:
 - [x] tokenize the dataset in format suitable for data collation
-- [ ] format data collator to only mask target sentence and keep source unchanged (based on sep token?)
 - [ ] train the model
 - [ ] ensure that only embeddings are being trained, and the model weights are fixed
 - [ ] profit???
@@ -72,6 +71,7 @@ We then iterate through multiple forward passes until we reach an eos_token outp
 
 # GCloud Compute CLI Cheatsheet
 ```
+gcloud compute instances start liewweipyn
 gcloud compute ssh liewweipyn
 gcloud compute instances stop liewweipyn
 ```
