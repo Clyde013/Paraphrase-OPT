@@ -1,9 +1,7 @@
 from pytorch_lightning import Trainer
 from soft_prompt_tuning.soft_prompt_opt import SoftOPTModelWrapper, ParaphraseOPT
 from training_datasets.parabank import ParabankDataModule
-
 from transformers import GPT2Tokenizer, DataCollatorForLanguageModeling
-
 from tqdm import tqdm
 
 import torch.optim as optim
@@ -16,6 +14,7 @@ AVAIL_GPUS = min(1, torch.cuda.device_count())
 
 datamodule = ParabankDataModule("facebook/opt-350m", 32)
 datamodule.setup()
+
 model = ParaphraseOPT()
 
 print("TRAINING MODEL")

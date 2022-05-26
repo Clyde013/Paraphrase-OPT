@@ -21,7 +21,7 @@ appear in ascending order of their bidirectional model scores (the lower the
 better), which we use to filter the bilingual resource used to generate ParaBank 2.
 '''
 from typing import Optional
-from datasets import load_dataset
+from datasets import load_dataset, IterableDataset
 from transformers import PreTrainedTokenizer, GPT2Tokenizer, DataCollatorForLanguageModeling
 from pytorch_lightning import LightningDataModule, LightningModule, Trainer, seed_everything
 from torch.utils.data import DataLoader
@@ -76,7 +76,7 @@ class ParabankDataModule(LightningDataModule):
         # preprocessing will take place while being streamed by dataloader
         self.dataset = self.dataset.map(preprocess, batched=True, remove_columns=['text'])
         # ensure pytorch tensors are returned
-        self.dataset = self.dataset.with_format('pt')
+        self.dataset = self.dataset.with_format("torch")
 
     # dataloaders are basically all the same since we cannot split a streamed dataset
     def train_dataloader(self):

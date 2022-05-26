@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2ace239f-5391-4e03-9643-5890db318888" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/soft_prompt_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/soft_prompt_tuning/soft_prompt_opt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/soft_prompt_tuning/soft_prompt_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/soft_prompt_tuning/soft_prompt_opt.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/training_datasets/parabank.py" beforeDir="false" afterPath="$PROJECT_DIR$/training_datasets/parabank.py" afterDir="false" />
     </list>
@@ -158,7 +156,17 @@
           <line>954</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/soft_prompt_tuning/soft_prompt_opt.py</url>
+          <line>50</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="input_ids" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

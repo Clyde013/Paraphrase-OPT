@@ -44,19 +44,21 @@ class SoftOPTModelWrapper(OPTForCausalLM):
         even though it does not matter what we pad input_ids with, it's just to make HF happy
         """
 
-        # concatenation of tensors have to happen on the same device
-        if input_ids is not None:
-            input_ids = torch.cat([torch.full((1, self.n_tokens), 50256).to(input_ids.device), input_ids], 1)
+        batch_size = input_ids.shape[0]
+        # Note: concatenation of tensors have to happen on the same device
+        # concat padding representing our learned embedding tokens for batched inputs
+        # inputs come in as (batch_size, seq_len) and are padded to be (batch_size, n_tokens + seq_len)
+        input_ids = torch.cat([torch.full((batch_size, self.n_tokens), 50256).to(input_ids.device), input_ids], dim=1)
+        attention_mask = torch.cat([torch.full((batch_size, self.n_tokens), 1).to(attention_mask.device), attention_mask], dim=1)
         if labels is not None:
-            labels = torch.cat([torch.full((1, self.n_tokens), 50256).to(labels.device), labels], 1)
-        if attention_mask is not None:
-            attention_mask = torch.cat([torch.full((1, self.n_tokens), 1).to(attention_mask.device), attention_mask], 1)
+            labels = torch.cat([torch.full((batch_size, self.n_tokens), 50256).to(labels.device), labels], dim=1)
 
         return super().forward(input_ids=input_ids, attention_mask=attention_mask, labels=labels, **kwargs)
 
 
 class ParaphraseOPT(LightningModule):
     def __init__(self):
+        super().__init__()
         self.model = SoftOPTModelWrapper.from_pretrained("facebook/opt-350m")
         # number of training examples sampled = total_steps * batch_size * grad_accumulation_batches
         # self.total_steps = total_steps
@@ -83,8 +85,4 @@ class ParaphraseOPT(LightningModule):
 
     def configure_optimizers(self):
         optimizer = Adam(self.model.soft_embedding.wte.parameters())
-        lr_scheduler = ReduceLROnPlateau(optimizer, 'min')
-
-        lr_scheduler = {"scheduler": lr_scheduler, "interval": "step", "frequency": 1}
-
-        return [optimizer], [lr_scheduler]
+        return optimizer
