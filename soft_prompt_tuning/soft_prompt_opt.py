@@ -1,8 +1,8 @@
-from transformers.models.opt.modeling_opt import *
-from .soft_embedding import SoftEmbedding
 from pytorch_lightning import LightningModule
 from torch.optim import Adam
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+from transformers.models.opt.modeling_opt import *
+
+from .soft_embedding import SoftEmbedding
 
 
 class SoftOPTModelWrapper(OPTForCausalLM):
@@ -49,7 +49,8 @@ class SoftOPTModelWrapper(OPTForCausalLM):
         # concat padding representing our learned embedding tokens for batched inputs
         # inputs come in as (batch_size, seq_len) and are padded to be (batch_size, n_tokens + seq_len)
         input_ids = torch.cat([torch.full((batch_size, self.n_tokens), 50256).to(input_ids.device), input_ids], dim=1)
-        attention_mask = torch.cat([torch.full((batch_size, self.n_tokens), 1).to(attention_mask.device), attention_mask], dim=1)
+        attention_mask = torch.cat(
+            [torch.full((batch_size, self.n_tokens), 1).to(attention_mask.device), attention_mask], dim=1)
         if labels is not None:
             labels = torch.cat([torch.full((batch_size, self.n_tokens), 50256).to(labels.device), labels], dim=1)
 
@@ -76,6 +77,7 @@ class ParaphraseOPT(LightningModule):
         val_loss, logits = outputs[:2]
 
         # we care only about the last token being predicted
+        # TODO: I expect there to be some error with the validation step dimension mismatch
         pred_token_logits = logits[:, -1, :]
         pred_token = torch.argmax(pred_token_logits, dim=-1)
 

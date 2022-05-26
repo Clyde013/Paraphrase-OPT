@@ -1,4 +1,4 @@
-'''
+"""
 README from parabank-2.0.zip
 
 The TSV file contains ParaBank 2, a diverse collection of paraphrases generated
@@ -19,12 +19,13 @@ to right correspond to the system with subscript "1" in evaluation, and the
 last to "5". All sentences are raw text (untokenized). The reference sentences
 appear in ascending order of their bidirectional model scores (the lower the
 better), which we use to filter the bilingual resource used to generate ParaBank 2.
-'''
+"""
 from typing import Optional
-from datasets import load_dataset, IterableDataset
-from transformers import PreTrainedTokenizer, GPT2Tokenizer, DataCollatorForLanguageModeling
-from pytorch_lightning import LightningDataModule, LightningModule, Trainer, seed_everything
+from datasets import load_dataset
+from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
+from transformers import GPT2Tokenizer, DataCollatorForLanguageModeling
+
 
 class ParabankDataModule(LightningDataModule):
     """

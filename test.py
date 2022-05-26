@@ -1,12 +1,8 @@
-from pytorch_lightning import Trainer
-from soft_prompt_tuning.soft_prompt_opt import SoftOPTModelWrapper, ParaphraseOPT
-from training_datasets.parabank import ParabankDataModule
-from transformers import GPT2Tokenizer, DataCollatorForLanguageModeling
-from tqdm import tqdm
-
-import torch.optim as optim
 import torch
-from torch.utils.data import DataLoader
+from pytorch_lightning import Trainer
+
+from soft_prompt_tuning.soft_prompt_opt import ParaphraseOPT
+from training_datasets.parabank import ParabankDataModule
 
 torch.cuda.empty_cache()
 
