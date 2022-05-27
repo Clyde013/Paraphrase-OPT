@@ -78,10 +78,14 @@ class ParaphraseOPT(LightningModule):
 
         # we care only about the last token being predicted
         # TODO: I expect there to be some error with the validation step dimension mismatch
+
         pred_token_logits = logits[:, -1, :]
         pred_token = torch.argmax(pred_token_logits, dim=-1)
 
-        labels = batch["labels"][:, -1, :]
+        """
+        IndexError: too many indices for tensor of dimension 2
+        """
+        labels = batch["labels"][:, -1]
 
         return {"loss": val_loss, "preds": pred_token, "labels": labels}
 

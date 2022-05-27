@@ -95,8 +95,19 @@ pip install protobuf==3.20.1
 
 # GCloud Compute CLI Cheatsheet
 
-```
+## ssh
+```commandline
 gcloud compute instances start liewweipyn
 gcloud compute ssh liewweipyn
 gcloud compute instances stop liewweipyn
 ```
+
+## tmux
+To detach sessions from the ssh shell, so we can close the ssh client without ending the training.
+Use ctrl + b + d to exit a session.
+```commandline
+tmux new    // create new session
+tmux ls // look at all created sessions
+tmux attach -t 0    // reattach to a detached session
+```
+
