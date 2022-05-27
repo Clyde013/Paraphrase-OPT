@@ -25,7 +25,7 @@ checkpoint_callback = ModelCheckpoint(
 )
 
 print("TRAINING MODEL")
-trainer = Trainer(max_epochs=300, gpus=AVAIL_GPUS, val_check_interval=1.0, callbacks=[checkpoint_callback], fast_dev_run=True)
+trainer = Trainer(max_epochs=300, gpus=AVAIL_GPUS, val_check_interval=1.0, callbacks=[checkpoint_callback])
 trainer.fit(model, datamodule=datamodule)
 
 """
