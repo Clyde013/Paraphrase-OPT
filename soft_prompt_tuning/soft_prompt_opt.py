@@ -61,8 +61,6 @@ class ParaphraseOPT(LightningModule):
     def __init__(self):
         super().__init__()
         self.model = SoftOPTModelWrapper.from_pretrained("facebook/opt-350m")
-        # number of training examples sampled = total_steps * batch_size * grad_accumulation_batches
-        # self.total_steps = total_steps
 
     def forward(self, **inputs):
         return self.model(**inputs)
@@ -77,14 +75,8 @@ class ParaphraseOPT(LightningModule):
         val_loss, logits = outputs[:2]
 
         # we care only about the last token being predicted
-        # TODO: I expect there to be some error with the validation step dimension mismatch
-
         pred_token_logits = logits[:, -1, :]
         pred_token = torch.argmax(pred_token_logits, dim=-1)
-
-        """
-        IndexError: too many indices for tensor of dimension 2
-        """
         labels = batch["labels"][:, -1]
 
         return {"loss": val_loss, "preds": pred_token, "labels": labels}
@@ -92,3 +84,16 @@ class ParaphraseOPT(LightningModule):
     def configure_optimizers(self):
         optimizer = Adam(self.model.soft_embedding.wte.parameters())
         return optimizer
+
+    def on_train_epoch_start(self) -> None:
+        # reshuffle the dataset for every train epoch
+        self.train_dataloader().dataset.set_epoch(self.current_epoch)
+
+    """For some godforsaken reason this error keeps popping up if I try to override the on_validation_epoch_start() hook
+    pytorch_lightning.utilities.exceptions.MisconfigurationException: `val_dataloader` must be implemented to be used with the Lightning Trainer
+    It seems like there is a bug where val_dataloader is not recognised as being implemented, and the workaround is just
+    to use on_validation_epoch_end() and +1 the current epoch 
+    """
+    def on_validation_epoch_end(self) -> None:
+        # reshuffle the dataset after every validation epoch for the next epoch
+        self.val_dataloader().dataset.set_epoch(self.current_epoch+1)

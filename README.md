@@ -26,8 +26,8 @@ predictions for tokens < n (logits predict what comes after n+1?). Might have to
 loss after the <sep> token counts.
 
 TODO:
-- [ ] install nvidia-smi drivers on gcloud compute
-- [ ] i swear there will be a tensor dim mismatch error caused by [this line](https://github.com/Clyde013/Paraphrase-OPT/blob/main/soft_prompt_tuning/soft_prompt_opt.py#L80)
+- [x] install nvidia-smi drivers on gcloud compute
+- [x] i swear there will be a tensor dim mismatch error caused by [this line](https://github.com/Clyde013/Paraphrase-OPT/blob/main/soft_prompt_tuning/soft_prompt_opt.py#L80)
 - [ ] train the model
 - [ ] ensure that only embeddings are being trained, and the model weights are fixed
 - [ ] profit???
