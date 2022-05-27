@@ -78,6 +78,8 @@ class ParaphraseOPT(LightningModule):
         pred_token = torch.argmax(pred_token_logits, dim=-1)
         labels = batch["labels"][:, -1]
 
+        self.log("val_loss", val_loss)
+
         return {"loss": val_loss, "preds": pred_token, "labels": labels}
 
     def configure_optimizers(self):

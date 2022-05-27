@@ -28,10 +28,14 @@ loss after the <sep> token counts.
 TODO:
 - [x] install nvidia-smi drivers on gcloud compute
 - [x] i swear there will be a tensor dim mismatch error caused by [this line](https://github.com/Clyde013/Paraphrase-OPT/blob/main/soft_prompt_tuning/soft_prompt_opt.py#L80)
-- [ ] train the model
-- [ ] how do i store the trained weights and move them out of google cloud compute
-- [ ] ensure that only embeddings are being trained, and the model weights are fixed
+- [x] train the model
+- [x] how do i store the trained weights and move them out of google cloud compute
+- [x] ensure that only embeddings are being trained, and the model weights are fixed
 - [ ] profit???
+
+I had some time while waiting for the checkpoint to download
+
+![](images/thats_quite_big.png)
 
 # Ideas
 
@@ -112,3 +116,8 @@ tmux ls // look at all created sessions
 tmux attach -t 0    // reattach to a detached session
 ```
 
+## scp
+To transfer files between google cloud compute and desktop, works both ways.
+```
+gcloud compute scp liewweipyn:<path to file without "~/"> <destination on desktop>
+```
