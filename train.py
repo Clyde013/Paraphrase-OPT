@@ -8,7 +8,7 @@ torch.cuda.empty_cache()
 
 AVAIL_GPUS = min(1, torch.cuda.device_count())
 
-datamodule = ParabankDataModule("facebook/opt-350m", batch_size=32, steps_per_epoch=10)
+datamodule = ParabankDataModule("facebook/opt-350m", batch_size=32, steps_per_epoch=100)
 datamodule.setup()
 
 model = ParaphraseOPT()
