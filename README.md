@@ -29,6 +29,7 @@ TODO:
 - [x] install nvidia-smi drivers on gcloud compute
 - [x] i swear there will be a tensor dim mismatch error caused by [this line](https://github.com/Clyde013/Paraphrase-OPT/blob/main/soft_prompt_tuning/soft_prompt_opt.py#L80)
 - [ ] train the model
+- [ ] how do i store the trained weights and move them out of google cloud compute
 - [ ] ensure that only embeddings are being trained, and the model weights are fixed
 - [ ] profit???
 
