@@ -7,13 +7,8 @@ from training_datasets.parabank import ParabankDataModule
 from transformers import GPT2Tokenizer
 from soft_prompt_tuning.soft_prompt_opt import SoftOPTModelWrapper
 
-datamodule = ParabankDataModule("facebook/opt-350m", batch_size=2, num_workers=1, steps_per_epoch=10)
-datamodule.setup()
-dl = datamodule.train_dataloader()
-print(dl)
-it = iter(dl)
-print(next(it))
-print(next(it))
+model = ParaphraseOPT()
+print(model.train_dataloader())
 
 """
 tokenizer = GPT2Tokenizer.from_pretrained("facebook/opt-350m")

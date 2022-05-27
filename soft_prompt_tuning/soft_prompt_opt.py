@@ -1,7 +1,6 @@
 from pytorch_lightning import LightningModule
 from torch.optim import Adam
 from transformers.models.opt.modeling_opt import *
-
 from .soft_embedding import SoftEmbedding
 
 
@@ -85,15 +84,27 @@ class ParaphraseOPT(LightningModule):
         optimizer = Adam(self.model.soft_embedding.wte.parameters())
         return optimizer
 
+    """
+    Note on following hooks (on_train_epoch_start and on_validation_epoch_start):
+    
+    Using the following code to access dataloaders:
+    self.train_dataloader().dataset.set_epoch(self.current_epoch)
+    Results in an exception like such :
+    pytorch_lightning.utilities.exceptions.MisconfigurationException: `val_dataloader` must be implemented to be used with the Lightning Trainer
+    
+    Although train_dataloader() is a valid hook, the hook is overriden only in the datamodule and we cannot reference
+    that. We have to use self.trainer.train_dataloader.dataset which returns some CombinedDataset and then .datasets
+    that one to get the original TorchIterableDataset.
+    
+    On the other hand, we can access validation dataloaders with self.trainer.val_dataloaders[0].dataset as that one is
+    apparently a list and not a CombinedDataset.
+    
+    Pain.
+    """
     def on_train_epoch_start(self) -> None:
         # reshuffle the dataset for every train epoch
-        self.train_dataloader().dataset.set_epoch(self.current_epoch)
+        self.trainer.train_dataloader.dataset.datasets.set_epoch(self.trainer.current_epoch)
 
-    """For some godforsaken reason this error keeps popping up if I try to override the on_validation_epoch_start() hook
-    pytorch_lightning.utilities.exceptions.MisconfigurationException: `val_dataloader` must be implemented to be used with the Lightning Trainer
-    It seems like there is a bug where val_dataloader is not recognised as being implemented, and the workaround is just
-    to use on_validation_epoch_end() and +1 the current epoch 
-    """
-    def on_validation_epoch_end(self) -> None:
-        # reshuffle the dataset after every validation epoch for the next epoch
-        self.val_dataloader().dataset.set_epoch(self.current_epoch+1)
+    def on_validation_epoch_start(self) -> None:
+        # reshuffle the dataset for every validation epoch
+        self.trainer.val_dataloaders[0].dataset.set_epoch(self.trainer.current_epoch)
