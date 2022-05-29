@@ -1,4 +1,4 @@
-from pytorch_lightning import LightningModule
+from pytorch_lightning import LightningModule, Callback
 from torch.optim import Adam
 from transformers.models.opt.modeling_opt import *
 from .soft_embedding import SoftEmbedding
@@ -83,7 +83,7 @@ class ParaphraseOPT(LightningModule):
         return {"loss": val_loss, "preds": pred_token, "labels": labels}
 
     def configure_optimizers(self):
-        optimizer = Adam(self.model.soft_embedding.wte.parameters())
+        optimizer = Adam(self.model.soft_embedding.learned_embedding.parameters())
         return optimizer
 
     """
@@ -110,3 +110,22 @@ class ParaphraseOPT(LightningModule):
     def on_validation_epoch_start(self) -> None:
         # reshuffle the dataset for every validation epoch
         self.trainer.val_dataloaders[0].dataset.set_epoch(self.trainer.current_epoch)
+
+
+
+class SaveSpecificLayersCallback(Callback):
+    def __init__(self, monitor, dirpath, filename, every_n_epochs, layers_to_save):
+        super().__init__()
+        self.monitor = monitor
+        self.dirpath = dirpath
+        self.filename = filename
+        self.every_n_epochs = every_n_epochs
+        self.layers_to_save = layers_to_save
+
+
+    def on_train_epoch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
+        for layer_name in pl_module.model.state_dict():
+            if layer_name in self.layers_to_save:
+                layer = pl_module.model.state_dict()[layer_name]
+
+

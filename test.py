@@ -4,7 +4,7 @@ from transformers import GPT2Tokenizer
 from soft_prompt_tuning.soft_prompt_opt import ParaphraseOPT
 from training_datasets.parabank import ParabankDataModule
 
-checkpoint = r"training_checkpoints/trained_soft_opt.ckpt"
+checkpoint = r"training_checkpoints/soft-opt-epoch=299-val_loss=3.296.ckpt"
 
 torch.cuda.empty_cache()
 
@@ -26,7 +26,7 @@ def compare_models(model_1, model_2):
             pass
         else:
             models_differ += 1
-            if (key_item_1[0] == key_item_2[0]):
+            if key_item_1[0] == key_item_2[0]:
                 print('Mismatch found at', key_item_1[0])
             else:
                 raise Exception
@@ -39,7 +39,7 @@ compare_models(default_model.model, model.model)
 
 print("----- MANUAL GENERATION -------")
 
-datamodule = ParabankDataModule("facebook/opt-350m", 1, 1000, seed=34567)
+datamodule = ParabankDataModule("facebook/opt-350m", 1, 1000, seed=7363)
 datamodule.setup()
 dl = datamodule.val_dataloader()
 it = iter(dl)
