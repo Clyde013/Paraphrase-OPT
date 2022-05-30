@@ -11,7 +11,7 @@ torch.cuda.empty_cache()
 AVAIL_GPUS = min(1, torch.cuda.device_count())
 wandb.init(project="paraphrase-opt", entity="clyde013")
 
-datamodule = ParabankDataModule("facebook/opt-350m", batch_size=1, steps_per_epoch=1000)
+datamodule = ParabankDataModule("facebook/opt-350m", batch_size=128, steps_per_epoch=5000)
 datamodule.setup()
 
 model = ParaphraseOPT()
@@ -33,10 +33,7 @@ trainer = Trainer(max_epochs=300, gpus=AVAIL_GPUS, val_check_interval=1.0, callb
                   logger=wandb_logger)
 trainer.fit(model, datamodule=datamodule)
 
-"""
-print("VALIDATING MODEL")
-trainer.validate(model, datamodule=datamodule)
-"""
+wandb.finish()
 
 print("--------- MODEL COMPARISON -----------")
 
