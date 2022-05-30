@@ -14,6 +14,11 @@ Paraphrase: "I\'m thirsty."\n\nThe group of frogs was so thirsty that they were 
 to find water.\n\nThe group of frogs was'
 ```
 
+Trying 13B gives this result:
+```
+RuntimeError: CUDA out of memory. Tried to allocate 100.00 MiB (GPU 0; 39.59 GiB total capacity; 37.53 GiB already allocated; 22.19 MiB free; 37.53 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+```
+
 # Current Implementation
 
 Copy pasted soft prompt tuning and created a huggingface model wrapper around OPT for it. It seems to be working. *
