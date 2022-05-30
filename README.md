@@ -31,7 +31,7 @@ predictions for tokens < n (logits predict what comes after n+1?). Might have to
 loss after the <sep> token counts.
 
 TODO:
-- [ ] implement custom saving checkpoint for specific layers so downloading from google cloud doesn't take forever
+- [ ] post TODO list on google chat
 - [ ] retrain the model? it still sucks.
 - [ ] profit???
 
@@ -90,6 +90,19 @@ sequence.
 
 Some errors may pop up when trying to run the program. "But it works on my machine" yeah it will work on your machine
 when you do these things.
+
+### Memory Errors
+Who doesn't love training large models? Some errors aren't due to the large model though. Like this one, this one occurs
+if the batch size is too large. Reduce the batch size because huggingface is trying to allocate a continguous block of
+gpu memory to compare the logits, and if the batch size is too large the logits are as a result too large to fit in the
+gpu.
+
+```commandline
+  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/transformers/models/opt/modeling_opt.py", line 951, in forward
+    shift_logits = logits[..., :-1, :].contiguous()
+RuntimeError: CUDA out of memory. Tried to allocate 2.11 GiB (GPU 0; 39.59 GiB total capacity; 36.18 GiB already allocated; 910.19 MiB free; 36.66 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+```
+
 
 ### protobuf error
 
