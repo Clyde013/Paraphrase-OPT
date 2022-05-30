@@ -4,7 +4,7 @@ from transformers import GPT2Tokenizer
 from soft_prompt_tuning.soft_prompt_opt import ParaphraseOPT
 from training_datasets.parabank import ParabankDataModule
 
-checkpoint = r"training_checkpoints/soft-opt-epoch=299-val_loss=3.296.ckpt"
+checkpoint = r"training_checkpoints/soft-opt-epoch=269-val_loss=3.318.ckpt"
 
 torch.cuda.empty_cache()
 
@@ -14,6 +14,7 @@ model = ParaphraseOPT.load_from_checkpoint(checkpoint)
 model = model.eval()
 
 tokenizer = GPT2Tokenizer.from_pretrained("facebook/opt-350m")
+
 
 print("-------- MODEL COMPARISON -----------")
 

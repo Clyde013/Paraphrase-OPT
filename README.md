@@ -26,11 +26,8 @@ predictions for tokens < n (logits predict what comes after n+1?). Might have to
 loss after the <sep> token counts.
 
 TODO:
-- [x] install nvidia-smi drivers on gcloud compute
-- [x] i swear there will be a tensor dim mismatch error caused by [this line](https://github.com/Clyde013/Paraphrase-OPT/blob/main/soft_prompt_tuning/soft_prompt_opt.py#L80)
-- [x] train the model
-- [x] how do i store the trained weights and move them out of google cloud compute
-- [x] ensure that only embeddings are being trained, and the model weights are fixed
+- [ ] implement custom saving checkpoint for specific layers so downloading from google cloud doesn't take forever
+- [ ] retrain the model? it still sucks.
 - [ ] profit???
 
 I had some time while waiting for the checkpoint to download

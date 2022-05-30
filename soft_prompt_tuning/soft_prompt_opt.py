@@ -2,6 +2,7 @@ from pytorch_lightning import LightningModule, Callback
 from torch.optim import Adam
 from transformers.models.opt.modeling_opt import *
 from .soft_embedding import SoftEmbedding
+import os
 
 
 class SoftOPTModelWrapper(OPTForCausalLM):
@@ -83,7 +84,7 @@ class ParaphraseOPT(LightningModule):
         return {"loss": val_loss, "preds": pred_token, "labels": labels}
 
     def configure_optimizers(self):
-        optimizer = Adam(self.model.soft_embedding.learned_embedding.parameters())
+        optimizer = Adam([self.model.soft_embedding.learned_embedding])
         return optimizer
 
     """
@@ -103,6 +104,7 @@ class ParaphraseOPT(LightningModule):
     
     Pain.
     """
+
     def on_train_epoch_start(self) -> None:
         # reshuffle the dataset for every train epoch
         self.trainer.train_dataloader.dataset.datasets.set_epoch(self.trainer.current_epoch)
@@ -112,9 +114,13 @@ class ParaphraseOPT(LightningModule):
         self.trainer.val_dataloaders[0].dataset.set_epoch(self.trainer.current_epoch)
 
 
-
-class SaveSpecificLayersCallback(Callback):
-    def __init__(self, monitor, dirpath, filename, every_n_epochs, layers_to_save):
+class SpecificLayersCheckpoint(Callback):
+    """
+    Custom saving of specific layers into a state_dict that can be loaded in using torch.load()
+    Ideally, we load in the model with from_pretrained, and then use state_dict.update() to update the
+    weights of the loaded model.
+    """
+    def __init__(self, monitor: str, dirpath: str, filename: str, every_n_epochs: int, layers_to_save: List[nn.Module]):
         super().__init__()
         self.monitor = monitor
         self.dirpath = dirpath
@@ -122,10 +128,13 @@ class SaveSpecificLayersCallback(Callback):
         self.every_n_epochs = every_n_epochs
         self.layers_to_save = layers_to_save
 
-
     def on_train_epoch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
-        for layer_name in pl_module.model.state_dict():
-            if layer_name in self.layers_to_save:
-                layer = pl_module.model.state_dict()[layer_name]
+        # if model should be saved this epoch (+1 since epoch count starts from 0)
+        if (trainer.current_epoch + 1) % self.every_n_epochs == 0:
+            save_dict = dict()
+            for layer in self.layers_to_save:
+                save_dict.update(layer.state_dict())
 
+            formatted_filename = self.filename.format(epoch=trainer.current_epoch, **trainer.callback_metrics)
 
+            torch.save(save_dict, os.path.join(self.dirpath, formatted_filename))
