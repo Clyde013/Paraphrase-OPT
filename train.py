@@ -1,30 +1,36 @@
 import torch
+import wandb
 from pytorch_lightning import Trainer
+from pytorch_lightning.loggers import WandbLogger
 
 from soft_prompt_tuning.soft_prompt_opt import ParaphraseOPT, SpecificLayersCheckpoint
 from training_datasets.parabank import ParabankDataModule
 
+# initialisation steps
 torch.cuda.empty_cache()
-
 AVAIL_GPUS = min(1, torch.cuda.device_count())
+wandb.init(project="paraphrase-opt", entity="clyde013")
 
-datamodule = ParabankDataModule("facebook/opt-350m", batch_size=64, steps_per_epoch=1000)
+datamodule = ParabankDataModule("facebook/opt-350m", batch_size=1, steps_per_epoch=1000)
 datamodule.setup()
 
 model = ParaphraseOPT()
 
-# saves a file like: my/path/sample-mnist-epoch=02-val_loss=0.32.ckpt
+# saves a file like: training_checkpoints/soft-opt-epoch=02-val_loss=0.32.ckpt
 checkpoint_callback = SpecificLayersCheckpoint(
     monitor="val_loss",
     dirpath="training_checkpoints/",
-    filename="soft-opt-epoch={epoch:03d}-val_loss={val_loss:.3f}",
+    filename="soft-opt-epoch={epoch:03d}-val_loss={val_loss:.3f}.ckpt",
     every_n_epochs=30,
-    layers_to_save=[model.model.soft_embedding]
+    layers_to_save={"soft_embedding": model.model.soft_embedding}
 )
+
+# create wandb logger (obviously)
+wandb_logger = WandbLogger()
 
 print("TRAINING MODEL")
 trainer = Trainer(max_epochs=300, gpus=AVAIL_GPUS, val_check_interval=1.0, callbacks=[checkpoint_callback],
-                  fast_dev_run=True)
+                  logger=wandb_logger)
 trainer.fit(model, datamodule=datamodule)
 
 """

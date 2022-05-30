@@ -61,6 +61,7 @@ class ParaphraseOPT(LightningModule):
     def __init__(self):
         super().__init__()
         self.model = SoftOPTModelWrapper.from_pretrained("facebook/opt-350m")
+        self.save_hyperparameters()
 
     def forward(self, **inputs):
         return self.model(**inputs)
@@ -68,6 +69,7 @@ class ParaphraseOPT(LightningModule):
     def training_step(self, batch, batch_idx):
         outputs = self(**batch)
         loss = outputs[0]
+        self.log("train_loss", loss)
         return loss
 
     def validation_step(self, batch, batch_idx, dataloader_idx=0):
@@ -86,6 +88,29 @@ class ParaphraseOPT(LightningModule):
     def configure_optimizers(self):
         optimizer = Adam([self.model.soft_embedding.learned_embedding])
         return optimizer
+
+    @classmethod
+    def load_from_custom_save(cls, path):
+        """
+        custom save function to load from checkpoints created by SpecificLayersCheckpoint callback.
+        """
+        # instantiate lightningmodule with pretrained model
+        model = cls()
+
+        # load the saved checkpoint
+        saved_state_dict = torch.load(path)
+
+        # get the current state dict
+        state_dict = model.model.state_dict()
+
+        # update current state dict based on saved checkpoint states
+        state_dict.update(saved_state_dict)
+
+        # load updated state dict into the model
+        model.model.load_state_dict(state_dict)
+
+        return model
+
 
     """
     Note on following hooks (on_train_epoch_start and on_validation_epoch_start):
@@ -120,7 +145,8 @@ class SpecificLayersCheckpoint(Callback):
     Ideally, we load in the model with from_pretrained, and then use state_dict.update() to update the
     weights of the loaded model.
     """
-    def __init__(self, monitor: str, dirpath: str, filename: str, every_n_epochs: int, layers_to_save: List[nn.Module]):
+    def __init__(self, monitor: str, dirpath: str, filename: str,
+                 every_n_epochs: int, layers_to_save: dict[str: nn.Module]):
         super().__init__()
         self.monitor = monitor
         self.dirpath = dirpath
@@ -132,9 +158,10 @@ class SpecificLayersCheckpoint(Callback):
         # if model should be saved this epoch (+1 since epoch count starts from 0)
         if (trainer.current_epoch + 1) % self.every_n_epochs == 0:
             save_dict = dict()
-            for layer in self.layers_to_save:
-                save_dict.update(layer.state_dict())
+
+            # append the layer name relative to the rest of the model so loading the state dict can be done directly
+            for layer_name, layer in self.layers_to_save.items():
+                save_dict.update({f'{layer_name}.{k}': v for k, v in layer.state_dict().items()})
 
             formatted_filename = self.filename.format(epoch=trainer.current_epoch, **trainer.callback_metrics)
-
             torch.save(save_dict, os.path.join(self.dirpath, formatted_filename))
