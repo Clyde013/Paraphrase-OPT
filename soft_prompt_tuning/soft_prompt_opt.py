@@ -58,9 +58,9 @@ class SoftOPTModelWrapper(OPTForCausalLM):
 
 
 class ParaphraseOPT(LightningModule):
-    def __init__(self):
+    def __init__(self, model_name="facebook/opt-350m"):
         super().__init__()
-        self.model = SoftOPTModelWrapper.from_pretrained("facebook/opt-350m")
+        self.model = SoftOPTModelWrapper.from_pretrained(model_name)
         self.save_hyperparameters()
 
     def forward(self, **inputs):
@@ -86,7 +86,7 @@ class ParaphraseOPT(LightningModule):
         return {"loss": val_loss, "preds": pred_token, "labels": labels}
 
     def configure_optimizers(self):
-        optimizer = Adam([self.model.soft_embedding.learned_embedding])
+        optimizer = Adam([self.model.soft_embedding.learned_embedding], lr=1e-4)
         return optimizer
 
     @classmethod
@@ -103,8 +103,15 @@ class ParaphraseOPT(LightningModule):
         # get the current state dict
         state_dict = model.model.state_dict()
 
+        patch = dict()
+        for i, j in saved_state_dict.items():
+            patch["soft_embedding." + i] = j
+
         # update current state dict based on saved checkpoint states
-        state_dict.update(saved_state_dict)
+        state_dict.update(patch)
+
+        # update current state dict based on saved checkpoint states
+        # state_dict.update(saved_state_dict)
 
         # load updated state dict into the model
         model.model.load_state_dict(state_dict)

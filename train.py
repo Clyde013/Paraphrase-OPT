@@ -10,16 +10,17 @@ from training_datasets.parabank import ParabankDataModule
 torch.cuda.empty_cache()
 AVAIL_GPUS = min(1, torch.cuda.device_count())
 wandb.init(project="paraphrase-opt", entity="clyde013")
+model_name = "facebook/opt-13b"
 
-datamodule = ParabankDataModule("facebook/opt-350m", batch_size=128, steps_per_epoch=5000)
+datamodule = ParabankDataModule(model_name, batch_size=128, steps_per_epoch=5000)
 datamodule.setup()
 
-model = ParaphraseOPT()
+model = ParaphraseOPT(model_name)
 
 # saves a file like: training_checkpoints/soft-opt-epoch=02-val_loss=0.32.ckpt
 checkpoint_callback = SpecificLayersCheckpoint(
     monitor="val_loss",
-    dirpath="training_checkpoints/",
+    dirpath="training_checkpoints/30-05-2022-13b/",
     filename="soft-opt-epoch={epoch:03d}-val_loss={val_loss:.3f}.ckpt",
     every_n_epochs=30,
     layers_to_save={"soft_embedding": model.model.soft_embedding}
@@ -54,5 +55,5 @@ def compare_models(model_1, model_2):
         print('Models match perfectly! :)')
 
 
-default_model = ParaphraseOPT()
+default_model = ParaphraseOPT(model_name)
 compare_models(default_model.model, model.model)

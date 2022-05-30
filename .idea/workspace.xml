@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="2ace239f-5391-4e03-9643-5890db318888" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/soft_prompt_tuning/soft_prompt_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/soft_prompt_tuning/soft_prompt_opt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -52,7 +54,7 @@
       <recent name="C:\Users\weipy\OneDrive\Documents\GitHub\Paraphrase-OPT\training_datasets" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.test">
+  <component name="RunManager" selected="Python.train">
     <configuration name="parabank" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Paraphrase-OPT" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -145,8 +147,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.test" />
         <item itemvalue="Python.train" />
+        <item itemvalue="Python.test" />
         <item itemvalue="Python.parabank" />
         <item itemvalue="Python.soft_prompt_opt" />
         <item itemvalue="Python.parabank" />
@@ -167,6 +169,31 @@
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
+        <entry key="8fdff2fc-def3-4613-b1fc-1848509e3521">
+          <value>
+            <State>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="roots">
+                    <value>
+                      <list>
+                        <option value="$PROJECT_DIR$" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
         <entry key="MAIN">
           <value>
             <State />

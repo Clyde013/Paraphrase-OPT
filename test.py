@@ -4,7 +4,7 @@ from transformers import GPT2Tokenizer
 from soft_prompt_tuning.soft_prompt_opt import ParaphraseOPT
 from training_datasets.parabank import ParabankDataModule
 
-checkpoint = r"training_checkpoints/soft-opt-epoch=000-val_loss=14.535.ckpt"
+checkpoint = r"training_checkpoints/30-05-2022/soft-opt-epoch=299-val_loss=3.930.ckpt"
 
 torch.cuda.empty_cache()
 
@@ -40,7 +40,7 @@ compare_models(default_model.model, model.model)
 
 print("----- MANUAL GENERATION -------")
 
-datamodule = ParabankDataModule("facebook/opt-350m", 1, 1000, seed=986624)
+datamodule = ParabankDataModule("facebook/opt-350m", 1, 1000, seed=1337)
 datamodule.setup()
 dl = datamodule.val_dataloader()
 it = iter(dl)
