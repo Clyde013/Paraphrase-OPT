@@ -4,18 +4,23 @@ from transformers import GPT2Tokenizer
 from soft_prompt_tuning.soft_prompt_opt import ParaphraseOPT
 from training_datasets.parabank import ParabankDataModule
 
-checkpoint = r"training_checkpoints/30-05-2022/soft-opt-epoch=299-val_loss=3.930.ckpt"
+print("Initialising...")
+
+checkpoint = r"training_checkpoints/30-05-2022-1.3b/soft-opt-epoch=179-val_loss=1.397.ckpt"
+model_name = "facebook/opt-1.3b"
 
 torch.cuda.empty_cache()
 
 AVAIL_GPUS = min(1, torch.cuda.device_count())
 
-model = ParaphraseOPT.load_from_custom_save(checkpoint)
+model = ParaphraseOPT.load_from_custom_save(model_name, checkpoint)
 model = model.eval()
 
-tokenizer = GPT2Tokenizer.from_pretrained("facebook/opt-350m")
+default_model = ParaphraseOPT(model_name)
 
+tokenizer = GPT2Tokenizer.from_pretrained(model_name)
 
+"""
 print("-------- MODEL COMPARISON -----------")
 
 
@@ -34,16 +39,17 @@ def compare_models(model_1, model_2):
     if models_differ == 0:
         print('Models match perfectly! :)')
 
+#compare_models(default_model.model, model.model)
 
-default_model = ParaphraseOPT()
-compare_models(default_model.model, model.model)
-
-print("----- MANUAL GENERATION -------")
-
-datamodule = ParabankDataModule("facebook/opt-350m", 1, 1000, seed=1337)
+datamodule = ParabankDataModule(model_name, 1, 1000, seed=1337)
 datamodule.setup()
 dl = datamodule.val_dataloader()
 it = iter(dl)
+"""
+"""
+print("----- MANUAL GENERATION -------")
+
+
 
 prompt = tokenizer.batch_decode(next(it).input_ids)[0]
 print(prompt)
@@ -60,16 +66,24 @@ for i in range(10):
     prompt = prompt + decoded[0]
 
 print(prompt)
+"""
+while True:
+    prompt = input("Prompt: ")
 
-print("------ AUTOMATIC GENERATION -------")
+    print("------ SIMPLE PROMPT ---------")
+    simple_prompt = prompt + ". paraphrase: "
+    print(simple_prompt)
+    inputs = tokenizer(simple_prompt, return_tensors="pt")
+    outputs = default_model.model.generate(inputs.input_ids, max_length=45, use_cache=False)
+    decoded = tokenizer.batch_decode(outputs)[0]
+    print(decoded)
 
-prompt = tokenizer.batch_decode(next(it).input_ids)[0]
-print(prompt)
-prompt = str.join("", prompt.split("</s>")[1])
-prompt = prompt + "</s>"
-print(prompt)
+    print("------ AUTOMATIC GENERATION -------")
+    soft_prompt = prompt + "</s>"
+    print(soft_prompt)
+    inputs = tokenizer(soft_prompt, return_tensors="pt")
+    outputs = model.model.generate(inputs.input_ids, max_length=45, use_cache=False)
+    decoded = tokenizer.batch_decode(outputs)[0]
+    print(decoded)
 
-inputs = tokenizer(prompt, return_tensors="pt")
-outputs = model.model.generate(inputs.input_ids, max_length=40, use_cache=False)
-decoded = tokenizer.batch_decode(outputs)[0]
-print(decoded)
+    print("-------- END ----------")

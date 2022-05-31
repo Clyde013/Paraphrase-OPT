@@ -1,3 +1,5 @@
+from typing import Dict
+
 from pytorch_lightning import LightningModule, Callback
 from torch.optim import Adam
 from transformers.models.opt.modeling_opt import *
@@ -90,12 +92,12 @@ class ParaphraseOPT(LightningModule):
         return optimizer
 
     @classmethod
-    def load_from_custom_save(cls, path):
+    def load_from_custom_save(cls, model_name, path):
         """
         custom save function to load from checkpoints created by SpecificLayersCheckpoint callback.
         """
         # instantiate lightningmodule with pretrained model
-        model = cls()
+        model = cls(model_name)
 
         # load the saved checkpoint
         saved_state_dict = torch.load(path)
@@ -103,15 +105,8 @@ class ParaphraseOPT(LightningModule):
         # get the current state dict
         state_dict = model.model.state_dict()
 
-        patch = dict()
-        for i, j in saved_state_dict.items():
-            patch["soft_embedding." + i] = j
-
         # update current state dict based on saved checkpoint states
-        state_dict.update(patch)
-
-        # update current state dict based on saved checkpoint states
-        # state_dict.update(saved_state_dict)
+        state_dict.update(saved_state_dict)
 
         # load updated state dict into the model
         model.model.load_state_dict(state_dict)
@@ -153,7 +148,7 @@ class SpecificLayersCheckpoint(Callback):
     weights of the loaded model.
     """
     def __init__(self, monitor: str, dirpath: str, filename: str,
-                 every_n_epochs: int, layers_to_save: dict[str: nn.Module]):
+                 every_n_epochs: int, layers_to_save: Dict[str, nn.Module]):
         super().__init__()
         self.monitor = monitor
         self.dirpath = dirpath

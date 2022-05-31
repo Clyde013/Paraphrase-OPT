@@ -31,8 +31,10 @@ predictions for tokens < n (logits predict what comes after n+1?). Might have to
 loss after the <sep> token counts.
 
 TODO:
-- [ ] post TODO list on google chat
-- [ ] retrain the model? it still sucks.
+- [x] Setup custom torchmetrics for BartScore
+- [ ] Compare different scoring metrics (BLEU, ROUGE, etc.) for paraphrasing
+- [ ] Benchmark different prompt tuning techniques for different models
+- [ ] Find possibly better datasets / filter existing parabank dataset to reduce possible bottleneck during training
 - [ ] profit???
 
 I had some time while waiting for the checkpoint to download
