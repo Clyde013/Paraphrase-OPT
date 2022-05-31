@@ -4,7 +4,7 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import WandbLogger
 
 from soft_prompt_tuning.soft_prompt_opt import ParaphraseOPT, SpecificLayersCheckpoint
-from training_datasets.parabank import ParabankDataModule
+from training_datasets.parabank.parabank import ParabankDataModule
 
 # initialisation steps
 torch.cuda.empty_cache()

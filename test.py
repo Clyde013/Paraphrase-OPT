@@ -2,7 +2,6 @@ import torch
 
 from transformers import GPT2Tokenizer
 from soft_prompt_tuning.soft_prompt_opt import ParaphraseOPT
-from training_datasets.parabank import ParabankDataModule
 
 print("Initialising...")
 

@@ -1,2 +1,3 @@
 training_checkpoints/
 wandb/
+/training_datasets/para_nmt/para-nmt-5m-processed.zip
