@@ -3,7 +3,8 @@ from typing import Dict
 from pytorch_lightning import LightningModule, Callback
 from torch.optim import Adam
 from transformers.models.opt.modeling_opt import *
-from .soft_embedding import SoftEmbedding
+from soft_prompt_tuning.soft_embedding import SoftEmbedding
+
 import os
 
 
@@ -72,6 +73,7 @@ class ParaphraseOPT(LightningModule):
         outputs = self(**batch)
         loss = outputs[0]
         self.log("train_loss", loss)
+
         return loss
 
     def validation_step(self, batch, batch_idx, dataloader_idx=0):

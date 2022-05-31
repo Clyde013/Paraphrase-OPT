@@ -82,8 +82,12 @@ class BartScore(Metric):
         return score_list
 
 
-if __name__ == "__main__":
+def main():
     bartscore = BartScore()
     score = bartscore(['This is interesting.', 'This is a good idea.'],
                       ['This is curious.', 'Sounds like a good idea.'])
     print(score)
+
+
+if __name__ == "__main__":
+    main()

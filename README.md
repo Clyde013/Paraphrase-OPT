@@ -21,20 +21,14 @@ RuntimeError: CUDA out of memory. Tried to allocate 100.00 MiB (GPU 0; 39.59 GiB
 
 # Current Implementation
 
-Copy pasted soft prompt tuning and created a huggingface model wrapper around OPT for it. It seems to be working. *
-seems*.
-
-Might have to alter
-the [loss function calculation](https://github.com/huggingface/transformers/blob/main/src/transformers/models/opt/modeling_opt.py#L923)
-for CLM in OPTs forward pass. Currently it shifts the labels to the right by 1(???) such that the loss applies to
-predictions for tokens < n (logits predict what comes after n+1?). Might have to alter the loss function such that only
-loss after the <sep> token counts.
+Copy pasted soft prompt tuning and created a huggingface model wrapper around OPT for it. It seems to be working.
+Emphasis on *seems*.
 
 TODO:
 - [x] Setup custom torchmetrics for BartScore
-- [ ] Compare different scoring metrics (BLEU, ROUGE, etc.) for paraphrasing
 - [ ] Benchmark different prompt tuning techniques for different models
-- [ ] Find possibly better datasets / filter existing parabank dataset to reduce possible bottleneck during training
+- [ ] Implement NMT dataset
+- [ ] Prepare for sprint review
 - [ ] profit???
 
 I had some time while waiting for the checkpoint to download
