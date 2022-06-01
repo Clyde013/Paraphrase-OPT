@@ -17,7 +17,7 @@ class ParaCombinedDataModule(LightningDataModule):
     IterableDatasets do not support Dataloaders with num_workers > 0. Watch the PR to see if the fix will be merged.
     """
     def __init__(self, opt_name, batch_size, steps_per_epoch, datamodules: List[Type[LightningDataModule]],
-                 probabilities: List[float], num_workers=0, seed=69):
+                 probabilities: List[float], num_workers=0, seed=69, pre_tokenize=True):
         """
 
         Parameters
@@ -38,6 +38,8 @@ class ParaCombinedDataModule(LightningDataModule):
             refer to note above on PR https://github.com/huggingface/datasets/pull/4375
         seed: int
             haha funny number
+        pre_tokenize: bool
+            should we tokenize the texts (if true: dataset will return tokenized ids instead of source text)
         """
         super().__init__()
         self.opt_name = opt_name
@@ -45,6 +47,7 @@ class ParaCombinedDataModule(LightningDataModule):
         self.steps_per_epoch = steps_per_epoch
         self.num_workers = num_workers
         self.seed = seed
+        self.pre_tokenize = pre_tokenize
         self.datamodules = datamodules
         self.probabilities = probabilities
         self.tokenizer = None
@@ -65,7 +68,8 @@ class ParaCombinedDataModule(LightningDataModule):
         # instantiate all the datamodules and extract the dataset from them
         datasets = list()
         for datamodule in self.datamodules:
-            dm = datamodule(self.opt_name, self.batch_size, self.steps_per_epoch, self.seed)
+            dm = datamodule(self.opt_name, self.batch_size, self.steps_per_epoch,
+                            seed=self.seed, pre_tokenize=self.pre_tokenize)
             dm.setup()
             datasets.append(dm.dataset)
 
@@ -83,37 +87,41 @@ class ParaCombinedDataModule(LightningDataModule):
 
     # dataloaders are basically all the same since we cannot split a streamed dataset
     def train_dataloader(self):
-        return DataLoader(self.dataset,
-                          batch_size=self.batch_size,
-                          collate_fn=DataCollatorForLanguageModeling(self.tokenizer, mlm=False),
-                          num_workers=self.num_workers)
+        dataloader = DataLoader(self.dataset,
+                                batch_size=self.batch_size,
+                                num_workers=self.num_workers)
+        if self.pre_tokenize: dataloader.collate_fn = DataCollatorForLanguageModeling(self.tokenizer, mlm=False)
+        return dataloader
 
     def val_dataloader(self):
-        return DataLoader(self.dataset,
-                          batch_size=self.batch_size,
-                          collate_fn=DataCollatorForLanguageModeling(self.tokenizer, mlm=False),
-                          num_workers=self.num_workers)
+        dataloader = DataLoader(self.dataset,
+                                batch_size=self.batch_size,
+                                num_workers=self.num_workers)
+        if self.pre_tokenize: dataloader.collate_fn = DataCollatorForLanguageModeling(self.tokenizer, mlm=False)
+        return dataloader
 
     def test_dataloader(self):
-        return DataLoader(self.dataset,
-                          batch_size=self.batch_size,
-                          collate_fn=DataCollatorForLanguageModeling(self.tokenizer, mlm=False),
-                          num_workers=self.num_workers)
+        dataloader = DataLoader(self.dataset,
+                                batch_size=self.batch_size,
+                                num_workers=self.num_workers)
+        if self.pre_tokenize: dataloader.collate_fn = DataCollatorForLanguageModeling(self.tokenizer, mlm=False)
+        return dataloader
 
     def predict_dataloader(self):
-        return DataLoader(self.dataset,
-                          batch_size=self.batch_size,
-                          collate_fn=DataCollatorForLanguageModeling(self.tokenizer, mlm=False),
-                          num_workers=self.num_workers)
+        dataloader = DataLoader(self.dataset,
+                                batch_size=self.batch_size,
+                                num_workers=self.num_workers)
+        if self.pre_tokenize: dataloader.collate_fn = DataCollatorForLanguageModeling(self.tokenizer, mlm=False)
+        return dataloader
 
 
 if __name__ == "__main__":
     model_name = "facebook/opt-1.3b"
     datamodule = ParaCombinedDataModule(model_name, 1, 1000, [ParabankDataModule, ParaNMTDataModule],
-                                        probabilities=[0.35, 0.65], seed=1337)
+                                        probabilities=[0.35, 0.65], seed=1337, pre_tokenize=False)
     datamodule.setup()
     dl = datamodule.val_dataloader()
     it = iter(dl)
 
     for i in range(10):
-        print(datamodule.tokenizer.batch_decode(next(it)['input_ids'])[0])
+        print(next(it))

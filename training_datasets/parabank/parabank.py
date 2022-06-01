@@ -36,7 +36,7 @@ class ParabankDataModule(LightningDataModule):
     """
     parabank_url = "http://cs.jhu.edu/~vandurme/data/parabank-2.0.zip"
 
-    def __init__(self, opt_name, batch_size, steps_per_epoch, num_workers=0, seed=69):
+    def __init__(self, opt_name, batch_size, steps_per_epoch, num_workers=0, seed=69, pre_tokenize=True):
         """
 
         Parameters
@@ -53,6 +53,8 @@ class ParabankDataModule(LightningDataModule):
             refer to note above on PR https://github.com/huggingface/datasets/pull/4375
         seed: int
             haha funny number
+        pre_tokenize: bool
+            should we tokenize the texts (if true: dataset will return tokenized ids instead of source text)
         """
 
         super().__init__()
@@ -61,6 +63,7 @@ class ParabankDataModule(LightningDataModule):
         self.steps_per_epoch = steps_per_epoch
         self.num_workers = num_workers
         self.seed = seed
+        self.pre_tokenize = pre_tokenize
 
         # init None to make pycharm happy
         self.tokenizer = None
@@ -86,11 +89,14 @@ class ParabankDataModule(LightningDataModule):
                 if len(i) > 1:
                     processed_batch.append(i[0] + self.tokenizer.eos_token + i[1])
 
-            outputs = self.tokenizer(
-                processed_batch,
-                truncation=True,
-                max_length=69,
-            )
+            if self.pre_tokenize:
+                outputs = self.tokenizer(
+                    processed_batch,
+                    truncation=True,
+                    max_length=69,
+                )
+            else:
+                outputs = {"source": processed_batch}
             return outputs
 
         # init dataset in streaming mode
@@ -113,28 +119,32 @@ class ParabankDataModule(LightningDataModule):
 
     # dataloaders are basically all the same since we cannot split a streamed dataset
     def train_dataloader(self):
-        return DataLoader(self.dataset,
-                          batch_size=self.batch_size,
-                          collate_fn=DataCollatorForLanguageModeling(self.tokenizer, mlm=False),
-                          num_workers=self.num_workers)
+        dataloader = DataLoader(self.dataset,
+                                batch_size=self.batch_size,
+                                num_workers=self.num_workers)
+        if self.pre_tokenize: dataloader.collate_fn = DataCollatorForLanguageModeling(self.tokenizer, mlm=False)
+        return dataloader
 
     def val_dataloader(self):
-        return DataLoader(self.dataset,
-                          batch_size=self.batch_size,
-                          collate_fn=DataCollatorForLanguageModeling(self.tokenizer, mlm=False),
-                          num_workers=self.num_workers)
+        dataloader = DataLoader(self.dataset,
+                                batch_size=self.batch_size,
+                                num_workers=self.num_workers)
+        if self.pre_tokenize: dataloader.collate_fn = DataCollatorForLanguageModeling(self.tokenizer, mlm=False)
+        return dataloader
 
     def test_dataloader(self):
-        return DataLoader(self.dataset,
-                          batch_size=self.batch_size,
-                          collate_fn=DataCollatorForLanguageModeling(self.tokenizer, mlm=False),
-                          num_workers=self.num_workers)
+        dataloader = DataLoader(self.dataset,
+                                batch_size=self.batch_size,
+                                num_workers=self.num_workers)
+        if self.pre_tokenize: dataloader.collate_fn = DataCollatorForLanguageModeling(self.tokenizer, mlm=False)
+        return dataloader
 
     def predict_dataloader(self):
-        return DataLoader(self.dataset,
-                          batch_size=self.batch_size,
-                          collate_fn=DataCollatorForLanguageModeling(self.tokenizer, mlm=False),
-                          num_workers=self.num_workers)
+        dataloader = DataLoader(self.dataset,
+                                batch_size=self.batch_size,
+                                num_workers=self.num_workers)
+        if self.pre_tokenize: dataloader.collate_fn = DataCollatorForLanguageModeling(self.tokenizer, mlm=False)
+        return dataloader
 
 
 if __name__ == "__main__":

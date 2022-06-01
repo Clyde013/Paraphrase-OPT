@@ -25,9 +25,7 @@ Copy pasted soft prompt tuning and created a huggingface model wrapper around OP
 Emphasis on *seems*.
 
 TODO:
-- [ ] Retrain model with paracombined dataset
-- [ ] Benchmark different prompt tuning techniques for different models
-- [x] Implement paracombined dataset
+- [ ] Begin model benchmarking process
 - [ ] Prepare for sprint review
 - [ ] profit???
 
