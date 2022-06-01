@@ -27,7 +27,7 @@ Emphasis on *seems*.
 TODO:
 - [x] Setup custom torchmetrics for BartScore
 - [ ] Benchmark different prompt tuning techniques for different models
-- [ ] Implement NMT dataset
+- [x] Implement NMT dataset
 - [ ] Prepare for sprint review
 - [ ] profit???
 

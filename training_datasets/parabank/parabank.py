@@ -105,6 +105,7 @@ class ParabankDataModule(LightningDataModule):
         # monkeypatch of __len__ function in the dataloader so that the trainer knows how many
         # steps there are per epoch. Sure this violates many programming paradigms but it works.
         n = self.steps_per_epoch
+
         def __len__(self):
             return n
 
@@ -134,3 +135,14 @@ class ParabankDataModule(LightningDataModule):
                           batch_size=self.batch_size,
                           collate_fn=DataCollatorForLanguageModeling(self.tokenizer, mlm=False),
                           num_workers=self.num_workers)
+
+
+if __name__ == "__main__":
+    model_name = "facebook/opt-1.3b"
+    datamodule = ParabankDataModule(model_name, 1, 1000, seed=1337)
+    datamodule.setup()
+    dl = datamodule.val_dataloader()
+    it = iter(dl)
+
+    for i in range(10):
+        print(datamodule.tokenizer.batch_decode(next(it)['input_ids'])[0])
