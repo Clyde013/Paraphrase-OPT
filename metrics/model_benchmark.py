@@ -54,7 +54,7 @@ def run_model(dataset: List[str], save_path: str, model_name: str, checkpoint: s
     print(df)
 
 
-def benchmark(filepath):
+def benchmark_model(filepath):
     print("loading")
     df = pd.read_pickle(filepath)
     print(df)
@@ -68,11 +68,11 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    run_model(dataset=["Why do I always get depressed in the evening?",
-                       "What is the most important book you have ever read?",
-                       "What is purpose of life?"],
+    run_model(dataset=["adler took a few seconds to consider that, then nodded thoughtfully",
+                       "the computer didn't have its own consciousness or imagination",
+                       "she let him consider for a moment"],
               save_path=r"benchmark_runs/test.pkl",
               model_name="facebook/opt-1.3b",
               checkpoint=r"../training_checkpoints/30-05-2022-1.3b/soft-opt-epoch=179-val_loss=1.397.ckpt")
 
-    benchmark(r"benchmark_runs/test.pkl")
+    benchmark_model(r"benchmark_runs/test.pkl")
