@@ -54,7 +54,7 @@ def run_model(dataset: List[str], save_path: str, model_name: str, checkpoint: s
     print(df)
 
 
-def benchmark_model(filepath):
+def benchmark_pairs(filepath):
     print("loading")
     df = pd.read_pickle(filepath)
     print(df)

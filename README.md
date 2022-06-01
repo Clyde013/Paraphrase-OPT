@@ -25,9 +25,9 @@ Copy pasted soft prompt tuning and created a huggingface model wrapper around OP
 Emphasis on *seems*.
 
 TODO:
-- [x] Setup custom torchmetrics for BartScore
+- [ ] Retrain model with paracombined dataset
 - [ ] Benchmark different prompt tuning techniques for different models
-- [x] Implement NMT dataset
+- [x] Implement paracombined dataset
 - [ ] Prepare for sprint review
 - [ ] profit???
 

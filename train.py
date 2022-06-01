@@ -4,7 +4,9 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import WandbLogger
 
 from soft_prompt_tuning.soft_prompt_opt import ParaphraseOPT, SpecificLayersCheckpoint
+from training_datasets.paracombined import ParaCombinedDataModule
 from training_datasets.parabank.parabank import ParabankDataModule
+from training_datasets.para_nmt.para_nmt import ParaNMTDataModule
 
 # initialisation steps
 torch.cuda.empty_cache()
@@ -12,7 +14,9 @@ AVAIL_GPUS = min(1, torch.cuda.device_count())
 wandb.init(project="paraphrase-opt", entity="clyde013")
 model_name = "facebook/opt-1.3b"
 
-datamodule = ParabankDataModule(model_name, batch_size=128, steps_per_epoch=5000)
+datamodule = ParaCombinedDataModule(model_name, batch_size=32, steps_per_epoch=3000,
+                                    datamodules=[ParabankDataModule, ParaNMTDataModule],
+                                    probabilities=[0.35, 0.65])
 datamodule.setup()
 
 model = ParaphraseOPT(model_name)
@@ -30,7 +34,7 @@ checkpoint_callback = SpecificLayersCheckpoint(
 wandb_logger = WandbLogger()
 
 print("TRAINING MODEL")
-trainer = Trainer(max_epochs=300, gpus=AVAIL_GPUS, val_check_interval=1.0, callbacks=[checkpoint_callback],
+trainer = Trainer(max_epochs=300, gpus=AVAIL_GPUS, val_check_interval=5.0, callbacks=[checkpoint_callback],
                   logger=wandb_logger)
 trainer.fit(model, datamodule=datamodule)
 
