@@ -57,6 +57,22 @@ def run_model(dataset: List[str], save_path: str, model_name: str, checkpoint: s
 def benchmark_pairs(filepath):
     print("loading")
     df = pd.read_pickle(filepath)
+
+    # init metrics
+    bart = BartScore()
+    rouge = ROUGEScore()
+    bleu = BLEUScore()
+
+    # apply the metrics on the source and target sentence
+    def score(row):
+        src, target = row
+        bartscore = bart([src], [target])
+        bleuscore = bleu([src], [target])
+        print(src, target, bartscore, bleuscore)
+        return pd.Series([src, target, bartscore, bleuscore], index=["src", "target", "bartscore", "bleuscore"])
+
+    # apply score function along each row
+    df = df.apply(score, axis=1)
     print(df)
 
 
@@ -68,11 +84,12 @@ def main():
 
 if __name__ == "__main__":
     # main()
+    """
     run_model(dataset=["adler took a few seconds to consider that, then nodded thoughtfully",
                        "the computer didn't have its own consciousness or imagination",
                        "she let him consider for a moment"],
               save_path=r"benchmark_runs/test.pkl",
               model_name="facebook/opt-1.3b",
               checkpoint=r"../training_checkpoints/30-05-2022-1.3b/soft-opt-epoch=179-val_loss=1.397.ckpt")
-
-    benchmark_model(r"benchmark_runs/test.pkl")
+    """
+    benchmark_pairs(r"benchmark_runs/test.pkl")

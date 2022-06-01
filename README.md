@@ -35,6 +35,14 @@ I had some time while waiting for the checkpoint to download
 
 ![](images/thats_quite_big.png)
 
+# Sprint Review
+BartScore (compare to BertScore)
+Why is it good
+Parabank was done on parallel language pairs > can be extended to like indonesian multilingual datasets
+provided we have a parallel dataset > we can train our own bartscore on different languages
+
+
+
 # Ideas
 
 Given that OPT is a decoder only model, how will we get it to perform what is traditionally considered a seq-2-seq task

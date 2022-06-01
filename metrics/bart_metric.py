@@ -66,14 +66,19 @@ class BartScore(Metric):
         tgt_mask = self.target_attention_mask[0]
         tgt_len = tgt_mask.sum(dim=1).to(self.device_)
 
+        # while we do not use the loss computation as a result of labels being provided, the labels also cause
+        # https://github.com/huggingface/transformers/blob/v4.17.0/src/transformers/models/bart/modeling_bart.py#L1320
+        # the decoder input id to be shifted to the right for us, which is needed for this to work
         output = self.model(
             input_ids=src_tokens,
-            attention_mask=src_mask
+            attention_mask=src_mask,
+            labels=tgt_tokens
         )
 
         # loss calculation based on original bart_score
         logits = output.logits.view(-1, self.model.config.vocab_size)
-        loss = self.loss_fct(self.lsm(logits), tgt_tokens.view(-1))
+        lsm_output = self.lsm(logits)
+        loss = self.loss_fct(lsm_output, tgt_tokens.view(-1))
         loss = loss.view(tgt_tokens.shape[0], -1)
         loss = loss.sum(dim=1) / tgt_len
         curr_score_list = [-x.item() for x in loss]
@@ -85,7 +90,7 @@ class BartScore(Metric):
 def main():
     bartscore = BartScore()
     score = bartscore(['This is interesting.', 'This is a good idea.'],
-                      ['This is curious.', 'Sounds like a good idea.'])
+                      ['This is very curious.', 'Sounds like a terrific formulation of human thought.'])
     print(score)
 
 
