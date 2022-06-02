@@ -22,7 +22,7 @@ format of a dataframe where the first column is the source (model predictions) a
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-def run_model(dataset: List[str], save_path: str, model_name: str, checkpoint: str = None, append_seq: str = "</s>"):
+def run_model(dataset: List[str], batch_size: int, save_path: str, model_name: str, checkpoint: str = None, append_seq: str = "</s>"):
     # init the dataset
     if checkpoint is None:
         model = ParaphraseOPT(model_name)
@@ -41,10 +41,22 @@ def run_model(dataset: List[str], save_path: str, model_name: str, checkpoint: s
     encoded_inputs = tokenizer([i + append_seq for i in dataset], padding=True, return_tensors='pt')
 
     print("Generating model predictions.")
-    # if use_cache=False is not used there will be dim mismatch as huggingface is cringe
-    output_sequences = model.model.generate(inputs=encoded_inputs['input_ids'].to(model.model.device),
-                                            max_length=420,
-                                            use_cache=False)
+    """ Yeah. Don't pass .generate() all the encoded inputs at once.
+    RuntimeError: CUDA out of memory. Tried to allocate 17.61 GiB (GPU 0; 39.59 GiB total capacity; 23.04 GiB 
+    already allocated; 14.16 GiB free; 23.38 GiB reserved in total by PyTorch) If reserved memory is >> allocated 
+    memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and 
+    PYTORCH_CUDA_ALLOC_CONF
+    """
+    # ensure no intermediate gradient tensors are stored. We need all the memory we can get.
+    with torch.no_grad():
+        for i in range(0, len(encoded_inputs), batch_size):
+            batch = encoded_inputs['input_ids'][i:i+batch_size]
+            # if use_cache=False is not used there will be dim mismatch as huggingface is cringe
+            output_sequences = model.model.generate(inputs=batch.to(model.model.device),
+                                                    max_length=420,
+                                                    use_cache=False)
+            # free the memory (it isn't actually removed from gpu but is able to be overwritten)
+            del batch
     # remove the source sentence based on the length of the inputs
     output_sequences = output_sequences[:, encoded_inputs['attention_mask'].size(dim=-1):]
 
@@ -98,6 +110,7 @@ if __name__ == "__main__":
     dataset = [i["source"].split("</s>")[0] for i in list(datamodule.dataset.take(dataset_size))]
 
     run_model(dataset=dataset,
+              batch_size=32,
               save_path=r"metrics/benchmark_runs/model_preds/1.3b-paracombined-5000-samples.pkl",
               model_name="facebook/opt-1.3b",
               checkpoint=r"training_checkpoints/01-06-2022-1.3b-paracombined/soft-opt-epoch=269-val_loss=1.862.ckpt")
