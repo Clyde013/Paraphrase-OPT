@@ -98,9 +98,9 @@ if __name__ == "__main__":
     dataset = [i["source"].split("</s>")[0] for i in list(datamodule.dataset.take(dataset_size))]
 
     run_model(dataset=dataset,
-              save_path=r"benchmark_runs/model_preds/1.3b-paracombined-5000-samples.pkl",
+              save_path=r"metrics/benchmark_runs/model_preds/1.3b-paracombined-5000-samples.pkl",
               model_name="facebook/opt-1.3b",
-              checkpoint=r"../training_checkpoints/01-06-2022-1.3b-paracombined/soft-opt-epoch=269-val_loss=1.862.ckpt")
+              checkpoint=r"training_checkpoints/01-06-2022-1.3b-paracombined/soft-opt-epoch=269-val_loss=1.862.ckpt")
 
-    benchmark_pairs(r"benchmark_runs/model_preds/1.3b-paracombined-5000-samples.pkl",
-                    save_path=r"benchmark_runs/model_benchmarked_results/1.3b-paracombined-5000-samples.pkl")
+    benchmark_pairs(r"metrics/benchmark_runs/model_preds/1.3b-paracombined-5000-samples.pkl",
+                    save_path=r"metrics/benchmark_runs/model_benchmarked_results/1.3b-paracombined-5000-samples.pkl")
