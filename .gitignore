@@ -1,5 +1,6 @@
 training_checkpoints/
 wandb/
 /training_datasets/para_nmt/para-nmt-5m-processed.zip
-/metrics/benchmark_runs/model_benchmarked_results/
-/metrics/benchmark_runs/model_preds/
+
+/metrics/benchmark_runs/model_benchmarked_results/*
+/metrics/benchmark_runs/model_preds/*
