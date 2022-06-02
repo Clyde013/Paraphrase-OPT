@@ -106,8 +106,9 @@ def benchmark_pairs(filepath, save_path):
 if __name__ == "__main__":
     package_directory = os.path.dirname(os.path.abspath(__file__))
 
-    model_preds_save_path = "metrics/benchmark_runs/model_preds/1.3b-paracombined-5000-samples.pkl"
-    benchmark_save_path = "metrics/benchmark_runs/model_benchmarked_results/1.3b-paracombined-5000-samples.pkl"
+    filename = "1.3b-paracombined-epoch=269-samples=100.pkl"
+    model_preds_save_path = "metrics/benchmark_runs/model_preds/"
+    benchmark_save_path = "metrics/benchmark_runs/model_benchmarked_results/"
     checkpoint_path = "training_checkpoints/01-06-2022-1.3b-paracombined/soft-opt-epoch=269-val_loss=1.862.ckpt"
 
     model_name = "facebook/opt-1.3b"
@@ -123,39 +124,9 @@ if __name__ == "__main__":
 
     run_model(dataset=dataset,
               batch_size=5,
-              save_path=os.path.join(package_directory, model_preds_save_path),
+              save_path=os.path.join(package_directory, model_preds_save_path, filename),
               model_name=model_name,
               checkpoint=os.path.join(package_directory, checkpoint_path))
 
-    benchmark_pairs(os.path.join(package_directory, model_preds_save_path),
-                    save_path=os.path.join(package_directory, benchmark_save_path))
-
-
-    """
-Encoding dataset.
-Generating model predictions.
-  0%|                                                                                                             | 0/3 [00:00<?, ?it/s]
-  [' bird stopped singing.', ': Implementation of Directive 2002/83/EC', ' want information about agent, please select agent.']
- 33%|█████████████████████████████████▋                                                                   | 1/3 [00:00<00:00,  3.16it/s]
- ['terilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is', ' am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take', ' someone who knows what goes on in the inner circle of a corporation like this...... knows what goes on in the inner circle of a corporation like this.']
- 67%|███████████████████████████████████████████████████████████████████▎                                 | 2/3 [00:13<00:07,  7.98s/it]
- [' i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir.`` i think i do, sir. `` i think i do, sir.`` i think i do, sir. `` i think i do, sir. `` i think i do, sir.`` i think i do, sir. `` i think i do, sir.`` i think i do, sir.', ' know, i know.', 'manent. permanent. permanent. permanent.']
-100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [00:20<00:00,  6.71s/it]
-Dataframe saving.
-Traceback (most recent call last):
-  File "/home/liewweipyn_aisingapore_org/Paraphrase-OPT/model_benchmark.py", line 124, in <module>
-    run_model(dataset=dataset,
-  File "/home/liewweipyn_aisingapore_org/Paraphrase-OPT/model_benchmark.py", line 75, in run_model
-    df = pd.DataFrame({"preds": outputs, "src": dataset})
-  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/frame.py", line 636, in __init__
-    mgr = dict_to_mgr(data, index, columns, dtype=dtype, copy=copy, typ=manager)
-  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/internals/construction.py", line 502, in dict_to_mgr
-    return arrays_to_mgr(arrays, columns, index, dtype=dtype, typ=typ, consolidate=copy)
-  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/internals/construction.py", line 120, in arrays_to_mgr
-    index = _extract_index(arrays)
-  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/internals/construction.py", line 674, in _extract_index
-    raise ValueError("All arrays must be of the same length")
-ValueError: All arrays must be of the same length
-
-    """
-
+    benchmark_pairs(os.path.join(package_directory, model_preds_save_path, filename),
+                    save_path=os.path.join(package_directory, benchmark_save_path, filename))
