@@ -43,6 +43,7 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_name: s
     print("Encoding dataset.")
     # append a sequence to the end of every input (could be </s> token or prompt like "paraphrase:") and encode all
     encoded_inputs = tokenizer([i + append_seq for i in dataset], padding=True, return_tensors='pt')
+    print(encoded_inputs)
 
     print("Generating model predictions.")
     """ Yeah. Don't pass .generate() all the encoded inputs at once.
@@ -56,22 +57,31 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_name: s
     with torch.no_grad():
         for i in tqdm(range(0, encoded_inputs['input_ids'].size(dim=0), batch_size)):
             batch = encoded_inputs['input_ids'][i:i+batch_size]
+            print("batch")
+            print(batch)
             # if use_cache=False is not used there will be dim mismatch as huggingface is cringe
             output_batch = model.model.generate(inputs=batch.to(model.model.device),
-                                                max_length=420,
+                                                max_length=100,
                                                 use_cache=False).to('cpu')
             # free the memory (it isn't actually removed from gpu but is able to be overwritten)
             del batch
 
+            print("output_batch")
+            print(output_batch)
+
             # remove the source sentence based on the length of the inputs
-            output_batch = output_batch[:, encoded_inputs['attention_mask'].size(dim=-1)+1:]
+            output_batch = output_batch[:, encoded_inputs['attention_mask'].size(dim=-1):]
 
             # decode outputs
             outputs = tokenizer.batch_decode(output_batch, skip_special_tokens=True)
+            print("decoded outputs")
             print(outputs)
             output_sequences.extend(outputs)
 
     print("Dataframe saving.")
+    print(len(outputs), len(dataset))
+    print(outputs)
+    print(dataset)
     df = pd.DataFrame({"preds": outputs, "src": dataset})
     df.to_pickle(save_path)
 
@@ -132,65 +142,30 @@ if __name__ == "__main__":
 
 
     """
-Decoding model predictions.
-[tensor([[  133,  5103,  2294,  ...,     1,     1,     1],
-        [47159,    35, 39046,  ...,     1,     1,     1],
-        [ 6968,   236,   335,  ...,     1,     1,     1],
-        [  104,  1334,   718,  ...,     4, 26672,   718],
-        [  118,   524,   164,  ...,   524,   164,     7]]), tensor([[ 8338,   951,    54,  ...,     1,     1,     1],
-        [49519,   939,   206,  ..., 21958,   479,     2],
-        [ 6968,   216,  2156,  ...,     1,     1,     1],
-        [ 1741, 39713,   479,  ...,     1,     1,     1],
-        [12196,   473,  2212,  ...,     1,     1,     1]]), tensor([[  118,   128,   119,   562,   615, 11810,   479,     2,     1,     1,
-             1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-             1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-             1],
-        [  487,  3109,   636,  2771,  1061,    23,     5, 13466,  5205,  4365,
-            11,  1625,   412,   479,     2,     1,     1,     1,     1,     1,
-             1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-             1],
-        [  627,  4286,     9,  8222,    16,   716,    15,     5,  9322,     9,
-          9057,   479,     2,     1,     1,     1,     1,     1,     1,     1,
-             1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-             1],
-        [31501,    10,   410,    55,    87,    14,     2,     1,     1,     1,
-             1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-             1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-             1],
-        [  627,   898,    40,    28,   372,  1808, 25606,    13,   117,  1181,
-          2156,    25,    62,     7,  2350,  2156,    40,     5,  3528,   181,
-          6072,     7,     5, 44980,  5840,     9,     5,  1692,  1380,   479,
-             2]]), tensor([[  133, 21839,    34, 20105,  1070,   157,    19,     5, 21839,   479,
-             2,     1,     1,     1,     1,     1],
-        [12196,   109,    47,   236,   162,     7,   109, 17487,     2,     1,
-             1,     1,     1,     1,     1,     1],
-        [  100,   216,   147,  7957,    16,     4,     2,     1,     1,     1,
-             1,     1,     1,     1,     1,     1],
-        [  118,   109,   295,   128,    90,   206,   939,   128,   119,   164,
-             7,   185,   143,  2356,   479,     2],
-        [ 6968,   214,   127,  2674, 19495,   479,     2,     1,     1,     1,
-             1,     1,     1,     1,     1,     1]]), tensor([[  250,   313,     8,    10,  1816,     4,     2,     1,     1,     1,
-             1,     1,     1,     1,     1],
-        [49519,   370,   214,    10,  1441,     9,  4318, 17487, 12801,   370,
-           214,   127,  1441, 27785,     2],
-        [ 6968,   214,    95,   277,  7945,  1816,   479,     2,     1,     1,
-             1,     1,     1,     1,     1],
-        [  405,   128,    29,    10,  1256,  3035,  1514,   479,     2,     1,
-             1,     1,     1,     1,     1],
-        [24970,   504,     9, 18912,    36,  3586,    43,   440,   316,  6551,
-            73, 32701,   479,     2,     1]]), tensor([[14517, 15462,    35,  ...,  5033,   221, 19783],
-        [  100,   216,    99,  ...,     1,     1,     1],
-        [49519,   939,   206,  ...,     1,     1,     1],
-        [  879,  4092,    13,  ...,     1,     1,     1],
-        [  118,  1266,  2156,  ...,     1,     1,     1]])]
+Encoding dataset.
+Generating model predictions.
+  0%|                                                                                                             | 0/3 [00:00<?, ?it/s]
+  [' bird stopped singing.', ': Implementation of Directive 2002/83/EC', ' want information about agent, please select agent.']
+ 33%|█████████████████████████████████▋                                                                   | 1/3 [00:00<00:00,  3.16it/s]
+ ['terilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is a problem. Sterilization is', ' am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take a large.i am going to take', ' someone who knows what goes on in the inner circle of a corporation like this...... knows what goes on in the inner circle of a corporation like this.']
+ 67%|███████████████████████████████████████████████████████████████████▎                                 | 2/3 [00:13<00:07,  7.98s/it]
+ [' i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir. `` i think i do, sir.`` i think i do, sir. `` i think i do, sir.`` i think i do, sir. `` i think i do, sir. `` i think i do, sir.`` i think i do, sir. `` i think i do, sir.`` i think i do, sir.', ' know, i know.', 'manent. permanent. permanent. permanent.']
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 3/3 [00:20<00:00,  6.71s/it]
+Dataframe saving.
 Traceback (most recent call last):
-  File "/home/liewweipyn_aisingapore_org/Paraphrase-OPT/model_benchmark.py", line 130, in <module>
+  File "/home/liewweipyn_aisingapore_org/Paraphrase-OPT/model_benchmark.py", line 124, in <module>
     run_model(dataset=dataset,
-  File "/home/liewweipyn_aisingapore_org/Paraphrase-OPT/model_benchmark.py", line 73, in run_model
-    output_sequences = pad_sequence(output_sequences, batch_first=True, padding_value=tokenizer.pad_token_id)
-  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/torch/nn/utils/rnn.py", line 378, in pad_sequence
-    return torch._C._nn.pad_sequence(sequences, batch_first, padding_value)
-RuntimeError: The size of tensor a (388) must match the size of tensor b (249) at non-singleton dimension 1
+  File "/home/liewweipyn_aisingapore_org/Paraphrase-OPT/model_benchmark.py", line 75, in run_model
+    df = pd.DataFrame({"preds": outputs, "src": dataset})
+  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/frame.py", line 636, in __init__
+    mgr = dict_to_mgr(data, index, columns, dtype=dtype, copy=copy, typ=manager)
+  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/internals/construction.py", line 502, in dict_to_mgr
+    return arrays_to_mgr(arrays, columns, index, dtype=dtype, typ=typ, consolidate=copy)
+  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/internals/construction.py", line 120, in arrays_to_mgr
+    index = _extract_index(arrays)
+  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/internals/construction.py", line 674, in _extract_index
+    raise ValueError("All arrays must be of the same length")
+ValueError: All arrays must be of the same length
 
     """
 
