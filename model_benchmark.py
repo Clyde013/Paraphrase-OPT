@@ -68,7 +68,8 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_name: s
 
     print("Decoding model predictions.")
     # concat batches into one tensor
-    output_sequences = torch.cat(output_sequences, dim=0)
+    print(output_sequences)
+    output_sequences = torch.stack(output_sequences, dim=0)
     # decode outputs
     outputs = tokenizer.batch_decode(output_sequences, skip_special_tokens=False)
     # remove trailing padding and appended sequence
@@ -113,7 +114,7 @@ if __name__ == "__main__":
     benchmark_save_path = "metrics/benchmark_runs/model_benchmarked_results/1.3b-paracombined-5000-samples.pkl"
     checkpoint_path = "training_checkpoints/01-06-2022-1.3b-paracombined/soft-opt-epoch=269-val_loss=1.862.ckpt"
 
-    model_name = "facebook/opt-125m"
+    model_name = "facebook/opt-1.3b"
     dataset_size = 100
 
     print("Datamodule setup.")
@@ -135,20 +136,13 @@ if __name__ == "__main__":
 
 
     """
-    Traceback (most recent call last):
-  File "/home/liewweipyn_aisingapore_org/Paraphrase-OPT/model_benchmark.py", line 115, in <module>
+Traceback (most recent call last):
+  File "/home/liewweipyn_aisingapore_org/Paraphrase-OPT/model_benchmark.py", line 127, in <module>
     run_model(dataset=dataset,
-  File "/home/liewweipyn_aisingapore_org/Paraphrase-OPT/model_benchmark.py", line 72, in run_model
-    df = pd.DataFrame({"preds": outputs, "src": dataset})
-  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/frame.py", line 636, in __init__
-    mgr = dict_to_mgr(data, index, columns, dtype=dtype, copy=copy, typ=manager)
-  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/internals/construction.py", line 502, in dict_to_mgr
-    return arrays_to_mgr(arrays, columns, index, dtype=dtype, typ=typ, consolidate=copy)
-  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/internals/construction.py", line 120, in arrays_to_mgr
-    index = _extract_index(arrays)
-  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/internals/construction.py", line 674, in _extract_index
-    raise ValueError("All arrays must be of the same length")
-ValueError: All arrays must be of the same length
+  File "/home/liewweipyn_aisingapore_org/Paraphrase-OPT/model_benchmark.py", line 71, in run_model
+    output_sequences = torch.cat(output_sequences, dim=0)
+RuntimeError: Sizes of tensors must match except in dimension 0. Expected size 359 but got size 19 for tensor number 1 in the list.
+
 
     """
 
