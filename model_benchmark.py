@@ -1,4 +1,5 @@
 import argparse
+import os
 from typing import List
 
 from tqdm import tqdm
@@ -49,20 +50,25 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_name: s
     memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and 
     PYTORCH_CUDA_ALLOC_CONF
     """
+    output_sequences = list()
     # ensure no intermediate gradient tensors are stored. We need all the memory we can get.
     with torch.no_grad():
         for i in tqdm(range(0, encoded_inputs['input_ids'].size(dim=0), batch_size)):
             batch = encoded_inputs['input_ids'][i:i+batch_size]
             # if use_cache=False is not used there will be dim mismatch as huggingface is cringe
-            output_sequences = model.model.generate(inputs=batch.to(model.model.device),
-                                                    max_length=420,
-                                                    use_cache=False)
+            output_batch = model.model.generate(inputs=batch.to(model.model.device),
+                                                max_length=420,
+                                                use_cache=False)
             # free the memory (it isn't actually removed from gpu but is able to be overwritten)
             del batch
-    # remove the source sentence based on the length of the inputs
-    output_sequences = output_sequences[:, encoded_inputs['attention_mask'].size(dim=-1):]
+
+            # remove the source sentence based on the length of the inputs
+            output_batch = output_batch[:, encoded_inputs['attention_mask'].size(dim=-1):]
+            output_sequences.append(output_batch)
 
     print("Decoding model predictions.")
+    # concat batches into one tensor
+    output_sequences = torch.cat(output_sequences, dim=0)
     # decode outputs
     outputs = tokenizer.batch_decode(output_sequences, skip_special_tokens=False)
     # remove trailing padding and appended sequence
@@ -101,8 +107,14 @@ def benchmark_pairs(filepath, save_path):
 
 
 if __name__ == "__main__":
-    model_name = "facebook/opt-1.3b"
-    dataset_size = 1000
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+
+    model_preds_save_path = "metrics/benchmark_runs/model_preds/1.3b-paracombined-5000-samples.pkl"
+    benchmark_save_path = "metrics/benchmark_runs/model_benchmarked_results/1.3b-paracombined-5000-samples.pkl"
+    checkpoint_path = "training_checkpoints/01-06-2022-1.3b-paracombined/soft-opt-epoch=269-val_loss=1.862.ckpt"
+
+    model_name = "facebook/opt-125m"
+    dataset_size = 100
 
     print("Datamodule setup.")
     datamodule = ParaCombinedDataModule(model_name, 1, 1000, [ParabankDataModule, ParaNMTDataModule],
@@ -113,10 +125,30 @@ if __name__ == "__main__":
     dataset = [i["source"].split("</s>")[0] for i in list(datamodule.dataset.take(dataset_size))]
 
     run_model(dataset=dataset,
-              batch_size=32,
-              save_path=r"metrics/benchmark_runs/model_preds/1.3b-paracombined-5000-samples.pkl",
+              batch_size=5,
+              save_path=os.path.join(package_directory, model_preds_save_path),
               model_name=model_name,
-              checkpoint=r"training_checkpoints/01-06-2022-1.3b-paracombined/soft-opt-epoch=269-val_loss=1.862.ckpt")
+              checkpoint=os.path.join(package_directory, checkpoint_path))
 
-    benchmark_pairs(r"metrics/benchmark_runs/model_preds/1.3b-paracombined-5000-samples.pkl",
-                    save_path=r"metrics/benchmark_runs/model_benchmarked_results/1.3b-paracombined-5000-samples.pkl")
+    benchmark_pairs(os.path.join(package_directory, model_preds_save_path),
+                    save_path=os.path.join(package_directory, benchmark_save_path))
+
+
+    """
+    Traceback (most recent call last):
+  File "/home/liewweipyn_aisingapore_org/Paraphrase-OPT/model_benchmark.py", line 115, in <module>
+    run_model(dataset=dataset,
+  File "/home/liewweipyn_aisingapore_org/Paraphrase-OPT/model_benchmark.py", line 72, in run_model
+    df = pd.DataFrame({"preds": outputs, "src": dataset})
+  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/frame.py", line 636, in __init__
+    mgr = dict_to_mgr(data, index, columns, dtype=dtype, copy=copy, typ=manager)
+  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/internals/construction.py", line 502, in dict_to_mgr
+    return arrays_to_mgr(arrays, columns, index, dtype=dtype, typ=typ, consolidate=copy)
+  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/internals/construction.py", line 120, in arrays_to_mgr
+    index = _extract_index(arrays)
+  File "/opt/conda/envs/OPT/lib/python3.10/site-packages/pandas/core/internals/construction.py", line 674, in _extract_index
+    raise ValueError("All arrays must be of the same length")
+ValueError: All arrays must be of the same length
+
+    """
+
