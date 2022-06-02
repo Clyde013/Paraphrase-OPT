@@ -43,7 +43,6 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_name: s
     print("Encoding dataset.")
     # append a sequence to the end of every input (could be </s> token or prompt like "paraphrase:") and encode all
     encoded_inputs = tokenizer([i + append_seq for i in dataset], padding=True, return_tensors='pt')
-    print(encoded_inputs)
 
     print("Generating model predictions.")
     """ Yeah. Don't pass .generate() all the encoded inputs at once.
@@ -57,8 +56,6 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_name: s
     with torch.no_grad():
         for i in tqdm(range(0, encoded_inputs['input_ids'].size(dim=0), batch_size)):
             batch = encoded_inputs['input_ids'][i:i+batch_size]
-            print("batch")
-            print(batch)
             # if use_cache=False is not used there will be dim mismatch as huggingface is cringe
             output_batch = model.model.generate(inputs=batch.to(model.model.device),
                                                 max_length=100,
@@ -66,23 +63,16 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_name: s
             # free the memory (it isn't actually removed from gpu but is able to be overwritten)
             del batch
 
-            print("output_batch")
-            print(output_batch)
-
             # remove the source sentence based on the length of the inputs
-            output_batch = output_batch[:, encoded_inputs['attention_mask'].size(dim=-1):]
+            output_batch = output_batch[:, encoded_inputs['input_ids'].size(dim=-1):]
 
-            # decode outputs
+            # decode outputs, after removal of source sentence should only remain eos token and padding on the right
+            # which are omitted by skip_special_tokens=True
             outputs = tokenizer.batch_decode(output_batch, skip_special_tokens=True)
-            print("decoded outputs")
-            print(outputs)
             output_sequences.extend(outputs)
 
     print("Dataframe saving.")
-    print(len(outputs), len(dataset))
-    print(outputs)
-    print(dataset)
-    df = pd.DataFrame({"preds": outputs, "src": dataset})
+    df = pd.DataFrame({"preds": output_sequences, "src": dataset})
     df.to_pickle(save_path)
 
     print(df)
@@ -121,18 +111,18 @@ if __name__ == "__main__":
     checkpoint_path = "training_checkpoints/01-06-2022-1.3b-paracombined/soft-opt-epoch=269-val_loss=1.862.ckpt"
 
     model_name = "facebook/opt-1.3b"
-    dataset_size = 9
+    dataset_size = 100
 
     print("Datamodule setup.")
     datamodule = ParaCombinedDataModule(model_name, 1, 1000, [ParabankDataModule, ParaNMTDataModule],
-                                        probabilities=[0.35, 0.65], seed=2975, pre_tokenize=False)
+                                        probabilities=[0.35, 0.65], seed=82765, pre_tokenize=False)
     datamodule.setup()
 
     # get the values from {"source": "...</s>..."} dict and then take only the first as dataset input for model
     dataset = [i["source"].split("</s>")[0] for i in list(datamodule.dataset.take(dataset_size))]
 
     run_model(dataset=dataset,
-              batch_size=3,
+              batch_size=5,
               save_path=os.path.join(package_directory, model_preds_save_path),
               model_name=model_name,
               checkpoint=os.path.join(package_directory, checkpoint_path))
