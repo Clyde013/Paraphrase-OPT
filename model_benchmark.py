@@ -1,6 +1,7 @@
 import argparse
 from typing import List
 
+from tqdm import tqdm
 import pandas as pd
 import torch
 from transformers import GPT2Tokenizer
@@ -24,6 +25,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def run_model(dataset: List[str], batch_size: int, save_path: str, model_name: str, checkpoint: str = None, append_seq: str = "</s>"):
     # init the dataset
+    print("Initialising.")
     if checkpoint is None:
         model = ParaphraseOPT(model_name)
     else:
@@ -49,7 +51,7 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_name: s
     """
     # ensure no intermediate gradient tensors are stored. We need all the memory we can get.
     with torch.no_grad():
-        for i in range(0, len(encoded_inputs), batch_size):
+        for i in tqdm(range(0, encoded_inputs['input_ids'].size(dim=0), batch_size)):
             batch = encoded_inputs['input_ids'][i:i+batch_size]
             # if use_cache=False is not used there will be dim mismatch as huggingface is cringe
             output_sequences = model.model.generate(inputs=batch.to(model.model.device),
@@ -102,6 +104,7 @@ if __name__ == "__main__":
     model_name = "facebook/opt-1.3b"
     dataset_size = 1000
 
+    print("Datamodule setup.")
     datamodule = ParaCombinedDataModule(model_name, 1, 1000, [ParabankDataModule, ParaNMTDataModule],
                                         probabilities=[0.35, 0.65], seed=1337, pre_tokenize=False)
     datamodule.setup()
@@ -112,7 +115,7 @@ if __name__ == "__main__":
     run_model(dataset=dataset,
               batch_size=32,
               save_path=r"metrics/benchmark_runs/model_preds/1.3b-paracombined-5000-samples.pkl",
-              model_name="facebook/opt-1.3b",
+              model_name=model_name,
               checkpoint=r"training_checkpoints/01-06-2022-1.3b-paracombined/soft-opt-epoch=269-val_loss=1.862.ckpt")
 
     benchmark_pairs(r"metrics/benchmark_runs/model_preds/1.3b-paracombined-5000-samples.pkl",
