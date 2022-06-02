@@ -25,7 +25,8 @@ Copy pasted soft prompt tuning and created a huggingface model wrapper around OP
 Emphasis on *seems*.
 
 TODO:
-- [ ] Begin model benchmarking process
+- [ ] Run model benchmarks on google cloud using GPUs
+- [ ] EDA
 - [ ] Prepare for sprint review
 - [ ] profit???
 
