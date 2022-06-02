@@ -5,6 +5,7 @@ from typing import List
 from tqdm import tqdm
 import pandas as pd
 import torch
+from torch.nn.utils.rnn import pad_sequence
 from transformers import GPT2Tokenizer
 
 from metrics.bart_metric import BartScore
@@ -58,7 +59,7 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_name: s
             # if use_cache=False is not used there will be dim mismatch as huggingface is cringe
             output_batch = model.model.generate(inputs=batch.to(model.model.device),
                                                 max_length=420,
-                                                use_cache=False)
+                                                use_cache=False).to('cpu')
             # free the memory (it isn't actually removed from gpu but is able to be overwritten)
             del batch
 
@@ -67,13 +68,13 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_name: s
             output_sequences.append(output_batch)
 
     print("Decoding model predictions.")
-    # concat batches into one tensor
+    # concat batches into one tensor, since they are uneven use pad_sequence which will add padding value
+    output_sequences = pad_sequence(output_sequences, batch_first=True, padding_value=tokenizer.pad_token_id)
     print(output_sequences)
-    output_sequences = torch.stack(output_sequences, dim=0)
     # decode outputs
     outputs = tokenizer.batch_decode(output_sequences, skip_special_tokens=False)
-    # remove trailing padding and appended sequence
-    outputs = [i[:i.rfind(append_seq)] for i in outputs]
+    # remove trailing padding
+    outputs = [i[:i.find(tokenizer.pad_token)] if i.find(tokenizer.pad_token) else i for i in outputs]
 
     print("Dataframe saving.")
     df = pd.DataFrame({"preds": outputs, "src": dataset})
@@ -115,11 +116,11 @@ if __name__ == "__main__":
     checkpoint_path = "training_checkpoints/01-06-2022-1.3b-paracombined/soft-opt-epoch=269-val_loss=1.862.ckpt"
 
     model_name = "facebook/opt-1.3b"
-    dataset_size = 100
+    dataset_size = 30
 
     print("Datamodule setup.")
     datamodule = ParaCombinedDataModule(model_name, 1, 1000, [ParabankDataModule, ParaNMTDataModule],
-                                        probabilities=[0.35, 0.65], seed=1337, pre_tokenize=False)
+                                        probabilities=[0.35, 0.65], seed=2975, pre_tokenize=False)
     datamodule.setup()
 
     # get the values from {"source": "...</s>..."} dict and then take only the first as dataset input for model
