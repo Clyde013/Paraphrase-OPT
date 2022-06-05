@@ -24,8 +24,12 @@ RuntimeError: CUDA out of memory. Tried to allocate 100.00 MiB (GPU 0; 39.59 GiB
 Copy pasted soft prompt tuning and created a huggingface model wrapper around OPT for it. It seems to be working.
 Emphasis on *seems*.
 
+
 TODO:
 - [ ] Run model benchmarks on google cloud using GPUs
+- [ ] Implement checkpoint saving of optimizers and lr_schedulers (log them in wandb as well https://github.com/wandb/client/issues/312)
+- [ ] wandb logging of learning rate as it is updated by the lr_scheduler maybe override callback for optimizer step or throw it into train_step
+- [ ] ValueError: `self.log(optimizer type, Adam)` was called, but `str` values cannot be logged
 - [ ] EDA
 - [ ] Prepare for sprint review
 - [ ] profit???

@@ -12,9 +12,9 @@ from training_datasets.para_nmt.para_nmt import ParaNMTDataModule
 torch.cuda.empty_cache()
 AVAIL_GPUS = min(1, torch.cuda.device_count())
 wandb.init(project="paraphrase-opt", entity="clyde013")
-model_name = "facebook/opt-1.3b"
+model_name = "facebook/opt-125m"
 
-datamodule = ParaCombinedDataModule(model_name, batch_size=32, steps_per_epoch=3000,
+datamodule = ParaCombinedDataModule(model_name, batch_size=1, steps_per_epoch=3000,
                                     datamodules=[ParabankDataModule, ParaNMTDataModule],
                                     probabilities=[0.35, 0.65])
 datamodule.setup()
@@ -35,7 +35,7 @@ wandb_logger = WandbLogger()
 
 print("TRAINING MODEL")
 trainer = Trainer(max_epochs=300, gpus=AVAIL_GPUS, val_check_interval=5.0, callbacks=[checkpoint_callback],
-                  logger=wandb_logger)
+                  logger=wandb_logger, fast_dev_run=True)
 trainer.fit(model, datamodule=datamodule)
 
 wandb.finish()

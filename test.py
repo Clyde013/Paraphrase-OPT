@@ -12,7 +12,7 @@ torch.cuda.empty_cache()
 
 AVAIL_GPUS = min(1, torch.cuda.device_count())
 
-model = ParaphraseOPT.load_from_custom_save(model_name, checkpoint)
+model, optimizer, lr_scheduler = ParaphraseOPT.load_from_custom_save(model_name, checkpoint)
 model = model.eval()
 
 default_model = ParaphraseOPT(model_name)

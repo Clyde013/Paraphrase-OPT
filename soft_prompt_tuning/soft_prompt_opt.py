@@ -1,7 +1,8 @@
 from typing import Dict
 
 from pytorch_lightning import LightningModule, Callback
-from torch.optim import Adam
+from torch.optim import Adam, Optimizer
+from torch.optim.lr_scheduler import ReduceLROnPlateau, _LRScheduler
 from transformers.models.opt.modeling_opt import *
 from soft_prompt_tuning.soft_embedding import SoftEmbedding
 
@@ -61,10 +62,16 @@ class SoftOPTModelWrapper(OPTForCausalLM):
 
 
 class ParaphraseOPT(LightningModule):
-    def __init__(self, model_name="facebook/opt-350m"):
+    def __init__(self, model_name="facebook/opt-350m", init_optimizer=None, init_lr_scheduler=None):
         super().__init__()
         self.model = SoftOPTModelWrapper.from_pretrained(model_name)
-        self.save_hyperparameters()
+
+        # these inits should be exclusively used for loading from checkpoints
+        # see load_from_custom_save for why.
+        self.init_optimizer = None
+        self.init_lr_scheduler = None
+
+        self.save_hyperparameters("model_name")
 
     def forward(self, **inputs):
         return self.model(**inputs)
@@ -90,41 +97,70 @@ class ParaphraseOPT(LightningModule):
         return {"loss": val_loss, "preds": pred_token, "labels": labels}
 
     def configure_optimizers(self):
-        optimizer = Adam([self.model.soft_embedding.learned_embedding], lr=1e-4)
-        return optimizer
+        # configure optimizer
+        if self.init_optimizer is None:
+            optimizer = Adam([self.model.soft_embedding.learned_embedding], lr=1e-3)
+        else:
+            optimizer = self.init_optimizer
+
+        # configure learning rate scheduler
+        if self.init_lr_scheduler is None:
+            lr_scheduler = {"scheduler": ReduceLROnPlateau(optimizer, "min", patience=10), "monitor": "train_loss"}
+        else:
+            lr_scheduler = self.init_lr_scheduler
+
+        # log optimizer parameters
+        self.log("optimizer type", type(optimizer).__name__)
+        self.log("lr_scheduler type", type(lr_scheduler).__name__)
+        for k, v in optimizer.param_groups:
+            # exclude params which refer to model.parameters()
+            if k != "params":
+                self.log(k, v)
+
+        return optimizer, lr_scheduler
 
     @classmethod
-    def load_from_custom_save(cls, model_name, path):
+    def load_from_custom_save(cls, model_name, path, optimizer: Optimizer = None, lr_scheduler: _LRScheduler = None):
         """
-        custom save function to load from checkpoints created by SpecificLayersCheckpoint callback.
-        """
-        # instantiate lightningmodule with pretrained model
-        model = cls(model_name)
+        Custom save function to load from checkpoints created by SpecificLayersCheckpoint callback.
 
+        Unfortunately pytorch lightning locks the optimizers in place after instantiation and there is no clean way
+        to change them afterwards. There are some workarounds but they all suck too:
+        https://github.com/PyTorchLightning/pytorch-lightning/discussions/9354
+        https://github.com/PyTorchLightning/pytorch-lightning/discussions/6131
+
+        So the current implementation is to throw in the optimizer and lr_scheduler as optional parameters during model
+        instantiation before then actually updating the model weights.
+
+        To try different optimizers and lr_schedulers change configure_optimizers() directly.
+        """
         # load the saved checkpoint
-        saved_state_dict = torch.load(path)
+        state_dict = torch.load(path)
 
-        # get the current state dict
-        state_dict = model.model.state_dict()
+        # load optimizer if required
+        if optimizer is not None:
+            optimizer.load_state_dict(state_dict["optimizer"])
 
-        # update current state dict based on saved checkpoint states
-        state_dict.update(saved_state_dict)
+        # load lr_scheduler if required
+        if lr_scheduler is not None:
+            lr_scheduler.load_state_dict(state_dict["lr_scheduler"])
 
-        # load updated state dict into the model
-        model.model.load_state_dict(state_dict)
+        # instantiate lightningmodule with pretrained model
+        model = cls(model_name, optimizer, lr_scheduler)
+
+        # load updated state dict into the model (as long as no layers are named optimizer or lr_scheduler)
+        model.model.load_state_dict(state_dict, strict=False)
 
         return model
-
 
     """
     Note on following hooks (on_train_epoch_start and on_validation_epoch_start):
     
-    Using the following code to access dataloaders:
-    self.train_dataloader().dataset.set_epoch(self.current_epoch)
-    Results in an exception like such :
-    pytorch_lightning.utilities.exceptions.MisconfigurationException: `val_dataloader` must be implemented to be used with the Lightning Trainer
+    Using the following code to access dataloaders: self.train_dataloader().dataset.set_epoch(self.current_epoch) 
+    Results in an exception like such : pytorch_lightning.utilities.exceptions.MisconfigurationException: 
+    `val_dataloader` must be implemented to be used with the Lightning Trainer 
     
-    Although train_dataloader() is a valid hook, the hook is overriden only in the datamodule and we cannot reference
+    Although train_dataloader() is a valid hook, the hook is overridden only in the datamodule and we cannot reference
     that. We have to use self.trainer.train_dataloader.dataset which returns some CombinedDataset and then .datasets
     that one to get the original TorchIterableDataset.
     
@@ -149,6 +185,7 @@ class SpecificLayersCheckpoint(Callback):
     Ideally, we load in the model with from_pretrained, and then use state_dict.update() to update the
     weights of the loaded model.
     """
+
     def __init__(self, monitor: str, dirpath: str, filename: str,
                  every_n_epochs: int, layers_to_save: Dict[str, nn.Module]):
         super().__init__()
@@ -160,12 +197,21 @@ class SpecificLayersCheckpoint(Callback):
 
     def on_train_epoch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
         # if model should be saved this epoch (+1 since epoch count starts from 0)
-        if (trainer.current_epoch + 1) % self.every_n_epochs == 0:
+        #if (trainer.current_epoch + 1) % self.every_n_epochs == 0:
+        if True:
             save_dict = dict()
 
             # append the layer name relative to the rest of the model so loading the state dict can be done directly
             for layer_name, layer in self.layers_to_save.items():
                 save_dict.update({f'{layer_name}.{k}': v for k, v in layer.state_dict().items()})
+
+            # save the optimizer
+            if pl_module.optimizers() is not None:
+                save_dict.update({"optimizer": pl_module.optimizers().optimizer.state_dict()})
+
+            # save the lr_scheduler
+            if pl_module.lr_schedulers() is not None:
+                save_dict.update({"lr_scheduler": pl_module.lr_schedulers().state_dict()})
 
             formatted_filename = self.filename.format(epoch=trainer.current_epoch, **trainer.callback_metrics)
             torch.save(save_dict, os.path.join(self.dirpath, formatted_filename))
