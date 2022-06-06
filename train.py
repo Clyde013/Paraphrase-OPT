@@ -1,3 +1,5 @@
+import os
+
 import torch
 import wandb
 from pytorch_lightning import Trainer
@@ -11,53 +13,44 @@ from training_datasets.para_nmt.para_nmt import ParaNMTDataModule
 # initialisation steps
 torch.cuda.empty_cache()
 AVAIL_GPUS = min(1, torch.cuda.device_count())
-wandb.init(project="paraphrase-opt", entity="clyde013")
-model_name = "facebook/opt-125m"
 
-datamodule = ParaCombinedDataModule(model_name, batch_size=1, steps_per_epoch=3000,
+"""
+# rewrite this dictionary to become raytune's hyperparameter config
+raytune_hyperparams = dict(
+    dropout=0.5,
+    batch_size=100,
+    learning_rate=0.001,
+)
+"""
+wandb.init(project="paraphrase-opt", entity="clyde013")  # , config=raytune_hyperparams)
+
+datamodule = ParaCombinedDataModule(wandb.config["model_name"], batch_size=wandb.config["batch_size"],
+                                    steps_per_epoch=wandb.config["steps_per_epoch"],
                                     datamodules=[ParabankDataModule, ParaNMTDataModule],
-                                    probabilities=[0.35, 0.65])
+                                    probabilities=[0.5, 0.5])
 datamodule.setup()
 
-model = ParaphraseOPT(model_name)
+if (wandb.config["load_from_checkpoint"] is not None) and (os.path.isfile(wandb.config["load_from_checkpoint"])):
+    model = ParaphraseOPT.load_from_custom_save(wandb.config["model_name"], wandb.config["load_from_checkpoint"])
+else:
+    model = ParaphraseOPT(wandb.config["model_name"])
 
-# saves a file like: training_checkpoints/soft-opt-epoch=02-val_loss=0.32.ckpt
 checkpoint_callback = SpecificLayersCheckpoint(
     monitor="val_loss",
-    dirpath="training_checkpoints/30-05-2022-1.3b/",
+    dirpath=wandb.config["checkpoint_save_dir"],
     filename="soft-opt-epoch={epoch:03d}-val_loss={val_loss:.3f}.ckpt",
-    every_n_epochs=30,
-    layers_to_save={"soft_embedding": model.model.soft_embedding}
+    every_n_epochs=wandb.config["checkpoint_every_n_epochs"],
+    layers_to_save=wandb.config["layers_to_optimize"]
 )
 
 # create wandb logger (obviously)
 wandb_logger = WandbLogger()
 
 print("TRAINING MODEL")
-trainer = Trainer(max_epochs=300, gpus=AVAIL_GPUS, val_check_interval=5.0, callbacks=[checkpoint_callback],
+trainer = Trainer(max_epochs=wandb.config["max_epochs"], gpus=AVAIL_GPUS,
+                  val_check_interval=wandb.config["val_check_interval"],
+                  callbacks=[checkpoint_callback],
                   logger=wandb_logger, fast_dev_run=True)
 trainer.fit(model, datamodule=datamodule)
 
 wandb.finish()
-
-print("--------- MODEL COMPARISON -----------")
-
-
-# thanks https://discuss.pytorch.org/t/check-if-models-have-same-weights/4351/6
-def compare_models(model_1, model_2):
-    models_differ = 0
-    for key_item_1, key_item_2 in zip(model_1.state_dict().items(), model_2.state_dict().items()):
-        if torch.equal(key_item_1[1], key_item_2[1]):
-            pass
-        else:
-            models_differ += 1
-            if key_item_1[0] == key_item_2[0]:
-                print('Mismatch found at', key_item_1[0])
-            else:
-                raise Exception
-    if models_differ == 0:
-        print('Models match perfectly! :)')
-
-
-default_model = ParaphraseOPT(model_name)
-compare_models(default_model.model, model.model)

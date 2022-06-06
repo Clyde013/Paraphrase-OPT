@@ -34,6 +34,14 @@ TODO:
 - [ ] Prepare for sprint review
 - [ ] profit???
 
+1. Use wandb.config yaml files to configure wandb.config to set training parameters.
+1. raytune has wandb_mixin then I hope wandb.config will be automatically updated by raytune
+1. Then initialise raytune with custom train function, possibly just wrap train.py.
+1. Maybe don't pass in wandb logger to tune.run() so we don't have multiple callbacks to wandb
+1. Fortunately raytune has integration with pytorch lightning so just follow the tutorial https://docs.ray.io/en/latest/ray-core/examples/using-ray-with-pytorch-lightning.html#hyperparameter-tuning-with-non-distributed-training
+
+
+
 I had some time while waiting for the checkpoint to download
 
 ![](images/thats_quite_big.png)

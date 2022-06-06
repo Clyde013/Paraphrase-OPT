@@ -1,11 +1,13 @@
+import re
 from typing import Dict
 
 from pytorch_lightning import LightningModule, Callback
-from torch.optim import Adam, Optimizer
+from torch.optim import Adam, SGD, Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau, _LRScheduler
 from transformers.models.opt.modeling_opt import *
 from soft_prompt_tuning.soft_embedding import SoftEmbedding
 
+import wandb
 import os
 
 
@@ -20,8 +22,8 @@ class SoftOPTModelWrapper(OPTForCausalLM):
         super().__init__(config)
 
         # init parameters for embedding
-        self.n_tokens = 20
-        self.init_from_vocab = True
+        self.n_tokens = wandb.config["embedding_n_tokens"]
+        self.init_from_vocab = wandb.config["init_from_vocab"]
 
         # initialise the embedding to learn
         self.soft_embedding = SoftEmbedding(self.get_input_embeddings(),
@@ -97,27 +99,43 @@ class ParaphraseOPT(LightningModule):
         return {"loss": val_loss, "preds": pred_token, "labels": labels}
 
     def configure_optimizers(self):
+        # thanks stack overflow!
+        # https://stackoverflow.com/questions/38460918/regex-matching-a-dictionary-efficiently-in-python
+        # extracting all the layers that are specified by layers_to_optimize using regex for partial matches
+        regex_matches = [re.compile(".*" + pattern + ".*").match for pattern in wandb.config["layers_to_optimize"]]
+        layers_to_optimize = [v for k, v in self.model.state_dict().items()
+                              if any(regex_match(k) for regex_match in regex_matches)]
+
         # configure optimizer
+        optimizers_key = {"Adam": Adam, "SGD": SGD}
         if self.init_optimizer is None:
-            optimizer = Adam([self.model.soft_embedding.learned_embedding], lr=1e-3)
+            optimizer_type = optimizers_key[wandb.config["optimizer_type"]]
+            optimizer = optimizer_type(layers_to_optimize)
+
+            # update with specified parameters
+            optim_state_dict = optimizer.state_dict()
+            optim_state_dict.update(wandb.config["optimizer_params"])
+            optimizer.load_state_dict(optim_state_dict)
         else:
             optimizer = self.init_optimizer
 
         # configure learning rate scheduler
+        lr_scheduler_key = {"ReduceLROnPlateau": ReduceLROnPlateau}
         if self.init_lr_scheduler is None:
-            lr_scheduler = {"scheduler": ReduceLROnPlateau(optimizer, "min", patience=10), "monitor": "train_loss"}
+            lr_scheduler_type = lr_scheduler_key[wandb.config["lr_scheduler_type"]]
+            lr_scheduler = lr_scheduler_type(optimizer)
+
+            # update with specified parameters
+            lr_scheduler_dict = lr_scheduler.state_dict()
+            lr_scheduler_dict.update(wandb.config["lr_scheduler_params"])
+            lr_scheduler.load_state_dict(lr_scheduler_dict)
         else:
             lr_scheduler = self.init_lr_scheduler
 
-        # log optimizer parameters
-        self.log("optimizer type", type(optimizer).__name__)
-        self.log("lr_scheduler type", type(lr_scheduler).__name__)
-        for k, v in optimizer.param_groups:
-            # exclude params which refer to model.parameters()
-            if k != "params":
-                self.log(k, v)
+        lr_scheduler_config = {"scheduler": lr_scheduler}
+        lr_scheduler_config.update(wandb.config["lr_scheduler_config"])
 
-        return optimizer, lr_scheduler
+        return {"optimizer": optimizer, "lr_scheduler": lr_scheduler_config}
 
     @classmethod
     def load_from_custom_save(cls, model_name, path, optimizer: Optimizer = None, lr_scheduler: _LRScheduler = None):
@@ -187,7 +205,7 @@ class SpecificLayersCheckpoint(Callback):
     """
 
     def __init__(self, monitor: str, dirpath: str, filename: str,
-                 every_n_epochs: int, layers_to_save: Dict[str, nn.Module]):
+                 every_n_epochs: int, layers_to_save: List[str]):
         super().__init__()
         self.monitor = monitor
         self.dirpath = dirpath
@@ -197,13 +215,14 @@ class SpecificLayersCheckpoint(Callback):
 
     def on_train_epoch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
         # if model should be saved this epoch (+1 since epoch count starts from 0)
-        #if (trainer.current_epoch + 1) % self.every_n_epochs == 0:
+        # if (trainer.current_epoch + 1) % self.every_n_epochs == 0:
         if True:
-            save_dict = dict()
-
-            # append the layer name relative to the rest of the model so loading the state dict can be done directly
-            for layer_name, layer in self.layers_to_save.items():
-                save_dict.update({f'{layer_name}.{k}': v for k, v in layer.state_dict().items()})
+            # thanks stack overflow!
+            # https://stackoverflow.com/questions/38460918/regex-matching-a-dictionary-efficiently-in-python
+            # extracting all the layers that are specified by layers_to_save using regex for partial matches
+            regex_matches = [re.compile(".*" + pattern + ".*").match for pattern in self.layers_to_save]
+            save_dict = {k: v for k, v in pl_module.model.state_dict().items()
+                         if any(regex_match(k) for regex_match in regex_matches)}
 
             # save the optimizer
             if pl_module.optimizers() is not None:

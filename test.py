@@ -1,18 +1,21 @@
 import torch
+import wandb
 
 from transformers import GPT2Tokenizer
 from soft_prompt_tuning.soft_prompt_opt import ParaphraseOPT
 
 print("Initialising...")
 
-checkpoint = r"training_checkpoints/30-05-2022-1.3b/soft-opt-epoch=179-val_loss=1.397.ckpt"
-model_name = "facebook/opt-1.3b"
+wandb.init(project="paraphrase-opt", entity="clyde013", name="test-model")
+
+checkpoint = r"training_checkpoints/30-05-2022-1.3b/soft-opt-epoch=000-val_loss=20.888.ckpt"
+model_name = "facebook/opt-125m"
 
 torch.cuda.empty_cache()
 
 AVAIL_GPUS = min(1, torch.cuda.device_count())
 
-model, optimizer, lr_scheduler = ParaphraseOPT.load_from_custom_save(model_name, checkpoint)
+model = ParaphraseOPT.load_from_custom_save(model_name, checkpoint)
 model = model.eval()
 
 default_model = ParaphraseOPT(model_name)
