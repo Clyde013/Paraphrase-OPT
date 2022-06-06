@@ -110,12 +110,7 @@ class ParaphraseOPT(LightningModule):
         optimizers_key = {"Adam": Adam, "SGD": SGD}
         if self.init_optimizer is None:
             optimizer_type = optimizers_key[wandb.config["optimizer_type"]]
-            optimizer = optimizer_type(layers_to_optimize)
-
-            # update with specified parameters
-            optim_state_dict = optimizer.state_dict()
-            optim_state_dict.update(wandb.config["optimizer_params"])
-            optimizer.load_state_dict(optim_state_dict)
+            optimizer = optimizer_type(layers_to_optimize, **wandb.config["optimizer_params"])
         else:
             optimizer = self.init_optimizer
 
@@ -123,12 +118,7 @@ class ParaphraseOPT(LightningModule):
         lr_scheduler_key = {"ReduceLROnPlateau": ReduceLROnPlateau}
         if self.init_lr_scheduler is None:
             lr_scheduler_type = lr_scheduler_key[wandb.config["lr_scheduler_type"]]
-            lr_scheduler = lr_scheduler_type(optimizer)
-
-            # update with specified parameters
-            lr_scheduler_dict = lr_scheduler.state_dict()
-            lr_scheduler_dict.update(wandb.config["lr_scheduler_params"])
-            lr_scheduler.load_state_dict(lr_scheduler_dict)
+            lr_scheduler = lr_scheduler_type(optimizer, **wandb.config["lr_scheduler_params"])
         else:
             lr_scheduler = self.init_lr_scheduler
 
@@ -215,8 +205,7 @@ class SpecificLayersCheckpoint(Callback):
 
     def on_train_epoch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule") -> None:
         # if model should be saved this epoch (+1 since epoch count starts from 0)
-        # if (trainer.current_epoch + 1) % self.every_n_epochs == 0:
-        if True:
+        if (trainer.current_epoch + 1) % self.every_n_epochs == 0:
             # thanks stack overflow!
             # https://stackoverflow.com/questions/38460918/regex-matching-a-dictionary-efficiently-in-python
             # extracting all the layers that are specified by layers_to_save using regex for partial matches

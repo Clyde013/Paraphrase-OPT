@@ -41,7 +41,8 @@ optimizer_type:
   value: "Adam"
 optimizer_params:
   desc: Parameters for the optimizer in the form of a dictionary, same format as state_dict.
-  value: {"lr": 1e-3}
+  # btw when using scientific notation write 1.0e-3 and not 1e-3 otherwise it is mistakenly parsed as string (bug on pyYAML side)
+  value: {"lr": 1.0e-3}
 lr_scheduler_type:
   desc: Type of learning rate scheduler to use (currently only supports "ReduceLROnPlateau")
   value: "ReduceLROnPlateau"

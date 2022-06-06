@@ -27,18 +27,10 @@ Emphasis on *seems*.
 
 TODO:
 - [ ] Run model benchmarks on google cloud using GPUs
-- [ ] Implement checkpoint saving of optimizers and lr_schedulers (log them in wandb as well https://github.com/wandb/client/issues/312)
-- [ ] wandb logging of learning rate as it is updated by the lr_scheduler maybe override callback for optimizer step or throw it into train_step
-- [ ] ValueError: `self.log(optimizer type, Adam)` was called, but `str` values cannot be logged
+- [ ] INTEGRATE OPTUNA
 - [ ] EDA
 - [ ] Prepare for sprint review
 - [ ] profit???
-
-1. Use wandb.config yaml files to configure wandb.config to set training parameters.
-1. raytune has wandb_mixin then I hope wandb.config will be automatically updated by raytune
-1. Then initialise raytune with custom train function, possibly just wrap train.py.
-1. Maybe don't pass in wandb logger to tune.run() so we don't have multiple callbacks to wandb
-1. Fortunately raytune has integration with pytorch lightning so just follow the tutorial https://docs.ray.io/en/latest/ray-core/examples/using-ray-with-pytorch-lightning.html#hyperparameter-tuning-with-non-distributed-training
 
 
 
