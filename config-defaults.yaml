@@ -20,7 +20,7 @@ steps_per_epoch:
 batch_size:
   desc: Batch size that each datamodule will output
   value: 1
-val_check_interval:
+check_val_every_n_epoch:
   desc: Every n epochs validation loop is run
   value: 5.0
 

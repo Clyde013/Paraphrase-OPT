@@ -64,9 +64,9 @@ def objective(trial: Trial):
 
     print("TRAINING MODEL")
     trainer = Trainer(max_epochs=wandb.config["max_epochs"], gpus=AVAIL_GPUS,
-                      val_check_interval=wandb.config["val_check_interval"],
+                      check_val_every_n_epoch=wandb.config["check_val_every_n_epoch"],
                       callbacks=[checkpoint_callback, early_stopping_callback],
-                      logger=wandb_logger, fast_dev_run=True)
+                      logger=wandb_logger)
     trainer.fit(model, datamodule=datamodule)
 
     wandb.finish()
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     pruner: optuna.pruners.BasePruner = optuna.pruners.MedianPruner()
 
     study = optuna.create_study(direction="minimize", pruner=pruner)
-    study.optimize(objective, n_trials=5)
+    study.optimize(objective, n_trials=20)
 
     print("Number of finished trials: {}".format(len(study.trials)))
 
