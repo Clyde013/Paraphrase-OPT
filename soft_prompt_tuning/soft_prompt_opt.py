@@ -1,4 +1,5 @@
 import re
+from functools import reduce
 from typing import Dict
 
 from pytorch_lightning import LightningModule, Callback
@@ -103,14 +104,31 @@ class ParaphraseOPT(LightningModule):
         # https://stackoverflow.com/questions/38460918/regex-matching-a-dictionary-efficiently-in-python
         # extracting all the layers that are specified by layers_to_optimize using regex for partial matches
         regex_matches = [re.compile(".*" + pattern + ".*").match for pattern in wandb.config["layers_to_optimize"]]
-        layers_to_optimize = [v for k, v in self.model.state_dict().items()
+        layers_to_optimize = [k for k in self.model.state_dict().keys()
                               if any(regex_match(k) for regex_match in regex_matches)]
 
         # configure optimizer
         optimizers_key = {"Adam": Adam, "SGD": SGD}
         if self.init_optimizer is None:
+            """
+            thanks forums! https://discuss.pytorch.org/t/how-to-access-to-a-layer-by-module-name/83797/8
+            We cannot directly pass in the tensor output (value) from state_dict() since that is not the same reference
+            as the actual layer, hence we instead look for the layer name with the regex matching, then access the 
+            module by name as below.
+            """
+            def get_module_by_name(module: Union[torch.Tensor, nn.Module],
+                                   access_string: str):
+                """Retrieve a module nested in another by its access string.
+
+                Works even when there is a Sequential in the module.
+                """
+                names = access_string.split(sep='.')
+                return reduce(getattr, names, module)
+
+            layers = [get_module_by_name(self.model, layer_name) for layer_name in layers_to_optimize]
+            # pass in the layers into optimizer
             optimizer_type = optimizers_key[wandb.config["optimizer_type"]]
-            optimizer = optimizer_type(layers_to_optimize, **wandb.config["optimizer_params"])
+            optimizer = optimizer_type(layers, **wandb.config["optimizer_params"])
         else:
             optimizer = self.init_optimizer
 

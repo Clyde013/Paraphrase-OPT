@@ -34,7 +34,7 @@ def objective(trial: Trial):
     trial_config["optimizer_type"] = optimizer_type
 
     # override default params with the hyperparamters being searched for
-    wandb.init(project="optimize-popt", entity="clyde013",
+    wandb.init(project="test-popt-dump", entity="clyde013",
                name=f"optimizer_type={optimizer_type}-embedding_n_tokens={embedding_n_tokens}")
     wandb.config.update(trial_config, allow_val_change=True)
 
