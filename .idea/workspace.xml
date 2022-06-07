@@ -2,9 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2ace239f-5391-4e03-9643-5890db318888" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config-defaults.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config-defaults.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/soft_prompt_tuning/soft_prompt_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/soft_prompt_tuning/soft_prompt_opt.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -170,8 +171,8 @@
       <item itemvalue="Python.bart_metric" />
       <item itemvalue="Python.model_benchmark" />
       <item itemvalue="Python.paracombined" />
-      <item itemvalue="Python.train" />
       <item itemvalue="Python.test" />
+      <item itemvalue="Python.train" />
     </list>
     <recent_temporary>
       <list>
