@@ -2,7 +2,7 @@
 ---
 model_name:
   desc: Name of variation of OPT from huggingface to initialise
-  value: "facebook/opt-125m"
+  value: "facebook/opt-1.3b"
 load_from_checkpoint:
   desc: Checkpoint path to load the model from, if None will instantiate from default
   value: null
@@ -13,24 +13,24 @@ load_from_checkpoint:
 # num_batches_per_epoch = steps_per_epoch / batch_size
 max_epochs:
   desc: Maximum number of training epochs
-  value: 300
+  value: 150
 steps_per_epoch:
   desc: Number of steps per epoch
-  value: 100
+  value: 8000
 batch_size:
   desc: Batch size that each datamodule will output
-  value: 1
+  value: 32
 check_val_every_n_epoch:
   desc: Every n epochs validation loop is run
-  value: 5.0
+  value: 2
 
 # checkpoint configs
 checkpoint_every_n_epochs:
   desc: Every n epochs we save a checkpoint of the model
-  value: 30
+  value: 50
 checkpoint_save_dir:
   desc: Directory to save checkpoints to
-  value: "training_checkpoints/"
+  value: "training_checkpoints/07-06-2022-optimize/"
 layers_to_optimize:
   desc: The name of the layers to optimize, and then save. regex matching will match even incomplete names, although try not the break this on purpose by matching more than 1 layer :)
   value: ["soft_embedding.learned_embedding"]
