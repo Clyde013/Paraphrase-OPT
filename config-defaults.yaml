@@ -13,7 +13,7 @@ load_from_checkpoint:
 # num_batches_per_epoch = steps_per_epoch / batch_size
 max_epochs:
   desc: Maximum number of training epochs
-  value: 150
+  value: 30
 steps_per_epoch:
   desc: Number of steps per epoch
   value: 8000
@@ -27,7 +27,7 @@ check_val_every_n_epoch:
 # checkpoint configs
 checkpoint_every_n_epochs:
   desc: Every n epochs we save a checkpoint of the model
-  value: 50
+  value: 30
 checkpoint_save_dir:
   desc: Directory to save checkpoints to
   value: "training_checkpoints/07-06-2022-optimize/"

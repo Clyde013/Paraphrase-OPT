@@ -27,47 +27,51 @@ def objective(trial: Trial):
     trial_config = dict()
 
     # number of embedding tokens
-    embedding_n_tokens = trial.suggest_int("embedding_n_tokens", 0, 100)
+    embedding_n_tokens = trial.suggest_int("embedding_n_tokens", 50, 150)
     trial_config["embedding_n_tokens"] = embedding_n_tokens
     # optimizers
-    optimizer_type = trial.suggest_categorical("optimizer_type", ["Adam", "SGD"])
+    # optimizer_type = trial.suggest_categorical("optimizer_type", ["Adam", "SGD"])
+    optimizer_type = "Adam"
     trial_config["optimizer_type"] = optimizer_type
 
     # override default params with the hyperparamters being searched for
-    wandb.init(project="optimize-popt", entity="clyde013",
-               name=f"optimizer_type={optimizer_type}-embedding_n_tokens={embedding_n_tokens}")
-    wandb.config.update(trial_config, allow_val_change=True)
+    run = wandb.init(project="test-popt-dump", entity="clyde013",
+                     name=f"optimizer_type={optimizer_type}-embedding_n_tokens={embedding_n_tokens}")
+    with run:
+        wandb.config.update(trial_config, allow_val_change=True)
 
-    datamodule = ParaCombinedDataModule(wandb.config["model_name"], batch_size=wandb.config["batch_size"],
-                                        steps_per_epoch=wandb.config["steps_per_epoch"],
-                                        datamodules=[ParabankDataModule, ParaNMTDataModule],
-                                        probabilities=[0.5, 0.5])
-    datamodule.setup()
+        datamodule = ParaCombinedDataModule(wandb.config["model_name"], batch_size=wandb.config["batch_size"],
+                                            steps_per_epoch=wandb.config["steps_per_epoch"],
+                                            datamodules=[ParabankDataModule, ParaNMTDataModule],
+                                            probabilities=[0.5, 0.5])
+        datamodule.setup()
 
-    if (wandb.config["load_from_checkpoint"] is not None) and (os.path.isfile(wandb.config["load_from_checkpoint"])):
-        model = ParaphraseOPT.load_from_custom_save(wandb.config["model_name"], wandb.config["load_from_checkpoint"])
-    else:
-        model = ParaphraseOPT(wandb.config["model_name"])
+        if (wandb.config["load_from_checkpoint"] is not None) and (os.path.isfile(wandb.config["load_from_checkpoint"])):
+            model = ParaphraseOPT.load_from_custom_save(wandb.config["model_name"],
+                                                        wandb.config["load_from_checkpoint"])
+        else:
+            model = ParaphraseOPT(wandb.config["model_name"])
 
-    checkpoint_callback = SpecificLayersCheckpoint(
-        monitor="val_loss",
-        dirpath=wandb.config["checkpoint_save_dir"],
-        filename="soft-opt-epoch={epoch:03d}-val_loss={val_loss:.3f}.ckpt",
-        every_n_epochs=wandb.config["checkpoint_every_n_epochs"],
-        layers_to_save=wandb.config["layers_to_optimize"]
-    )
+        checkpoint_callback = SpecificLayersCheckpoint(
+            monitor="val_loss",
+            dirpath=wandb.config["checkpoint_save_dir"],
+            filename="soft-opt-epoch={epoch:03d}-val_loss={val_loss:.3f}" +
+                     f"-optimizer_type={optimizer_type}-embedding_n_tokens={embedding_n_tokens}" + ".ckpt",
+            every_n_epochs=wandb.config["checkpoint_every_n_epochs"],
+            layers_to_save=wandb.config["layers_to_optimize"]
+        )
 
-    early_stopping_callback = PyTorchLightningPruningCallback(trial, monitor="val_loss")
+        early_stopping_callback = PyTorchLightningPruningCallback(trial, monitor="val_loss")
 
-    # create wandb logger (obviously)
-    wandb_logger = WandbLogger(checkpoint_callback=False)
+        # create wandb logger (obviously)
+        wandb_logger = WandbLogger()
 
-    print("TRAINING MODEL")
-    trainer = Trainer(max_epochs=wandb.config["max_epochs"], gpus=AVAIL_GPUS,
-                      check_val_every_n_epoch=wandb.config["check_val_every_n_epoch"],
-                      callbacks=[checkpoint_callback, early_stopping_callback],
-                      logger=wandb_logger)
-    trainer.fit(model, datamodule=datamodule)
+        print("TRAINING MODEL")
+        trainer = Trainer(max_epochs=wandb.config["max_epochs"], gpus=AVAIL_GPUS,
+                          check_val_every_n_epoch=wandb.config["check_val_every_n_epoch"],
+                          callbacks=[checkpoint_callback, early_stopping_callback],
+                          logger=wandb_logger)
+        trainer.fit(model, datamodule=datamodule)
 
     wandb.finish()
 
@@ -75,7 +79,7 @@ def objective(trial: Trial):
 
 
 if __name__ == "__main__":
-    pruner: optuna.pruners.BasePruner = optuna.pruners.MedianPruner()
+    pruner: optuna.pruners.BasePruner = optuna.pruners.MedianPruner(n_warmup_steps=1000)
 
     study = optuna.create_study(direction="minimize", pruner=pruner)
     study.optimize(objective, n_trials=20)
