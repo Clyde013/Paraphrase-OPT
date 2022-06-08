@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2ace239f-5391-4e03-9643-5890db318888" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/gui.py" afterDir="false" />
+    <list default="true" id="4fb95f3d-bfc6-4b9a-adfb-ca630a397616" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config-defaults.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config-defaults.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/soft_prompt_tuning/soft_embedding.py" beforeDir="false" afterPath="$PROJECT_DIR$/soft_prompt_tuning/soft_embedding.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -190,12 +186,12 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.gui" />
       <item itemvalue="Python.bart_metric" />
+      <item itemvalue="Python.gui" />
       <item itemvalue="Python.model_benchmark" />
       <item itemvalue="Python.paracombined" />
-      <item itemvalue="Python.train" />
       <item itemvalue="Python.test" />
+      <item itemvalue="Python.train" />
     </list>
     <recent_temporary>
       <list>

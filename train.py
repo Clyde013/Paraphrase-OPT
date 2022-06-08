@@ -35,7 +35,7 @@ def objective(trial: Trial):
     trial_config["optimizer_type"] = optimizer_type
 
     # override default params with the hyperparamters being searched for
-    run = wandb.init(project="test-popt-dump", entity="clyde013",
+    run = wandb.init(project="optimize-popt", entity="clyde013",
                      name=f"optimizer_type={optimizer_type}-embedding_n_tokens={embedding_n_tokens}")
     with run:
         wandb.config.update(trial_config, allow_val_change=True)
@@ -64,7 +64,7 @@ def objective(trial: Trial):
         early_stopping_callback = PyTorchLightningPruningCallback(trial, monitor="val_loss")
 
         # create wandb logger (obviously)
-        wandb_logger = WandbLogger()
+        wandb_logger = WandbLogger(checkpoint_callback=False)
 
         print("TRAINING MODEL")
         trainer = Trainer(max_epochs=wandb.config["max_epochs"], gpus=AVAIL_GPUS,
