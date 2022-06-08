@@ -32,7 +32,7 @@ class SoftEmbedding(nn.Module):
                              wte: nn.Embedding,
                              n_tokens: int = 10,
                              random_range: float = 0.5,
-                             initialize_from_vocab: bool = True):
+                             initialize_from_vocab: bool = True) -> torch.Tensor:
         """initializes learned embedding
         Args:
             same as __init__

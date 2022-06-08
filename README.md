@@ -27,7 +27,7 @@ Emphasis on *seems*.
 
 TODO:
 - [ ] Run model benchmarks on google cloud using GPUs
-- [ ] INTEGRATE OPTUNA
+- [ ] Comparison of prompt tuned models compared to normal fine tuned models
 - [ ] EDA
 - [ ] Prepare for sprint review
 - [ ] profit???
