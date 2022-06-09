@@ -4,3 +4,4 @@ wandb/
 
 /metrics/benchmark_runs/model_benchmarked_results/*
 /metrics/benchmark_runs/model_preds/*
+/visualisations/

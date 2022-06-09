@@ -2,8 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4fb95f3d-bfc6-4b9a-adfb-ca630a397616" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/test_vis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EDA.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/EDA.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,7 +62,7 @@
       <recent name="C:\Users\weipy\OneDrive\Documents\GitHub\Paraphrase-OPT\soft_prompt_tuning" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.gui">
+  <component name="RunManager" selected="Python.test_vis">
     <configuration name="bart_metric" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Paraphrase-OPT" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -143,7 +147,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="test_vis" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Paraphrase-OPT" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -155,7 +159,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\weipy\OneDrive\Documents\GitHub\Paraphrase-OPT\test_vis.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -186,17 +190,17 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.bart_metric" />
       <item itemvalue="Python.gui" />
+      <item itemvalue="Python.bart_metric" />
       <item itemvalue="Python.model_benchmark" />
       <item itemvalue="Python.paracombined" />
-      <item itemvalue="Python.test" />
       <item itemvalue="Python.train" />
+      <item itemvalue="Python.test_vis" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.test_vis" />
         <item itemvalue="Python.train" />
-        <item itemvalue="Python.test" />
         <item itemvalue="Python.model_benchmark" />
         <item itemvalue="Python.paracombined" />
         <item itemvalue="Python.bart_metric" />
@@ -206,7 +210,7 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="2ace239f-5391-4e03-9643-5890db318888" name="Default Changelist" comment="" />
+      <changelist id="4fb95f3d-bfc6-4b9a-adfb-ca630a397616" name="Default Changelist" comment="" />
       <created>1653358281680</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -263,6 +267,11 @@
           <url>file://$PROJECT_DIR$/metrics/bartscore.py</url>
           <line>64</line>
           <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$USER_HOME$/anaconda3/envs/OPT/Lib/site-packages/faerun/faerun.py</url>
+          <line>1108</line>
+          <option name="timeStamp" value="8" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -37,7 +37,7 @@ def reconstruct_tokens(model):
 
     reconstructed = list()
     for i in learned_embedding:
-        distance = torch.norm(embeddings.weight.data - i, dim=1)
+        distance = torch.norm(embeddings.weight.detach() - i, dim=1)
         nearest = torch.argmin(distance)
         reconstructed.append(nearest.item())
 
