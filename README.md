@@ -27,12 +27,26 @@ Emphasis on *seems*.
 
 TODO:
 - [ ] Run model benchmarks on google cloud using GPUs
-- [ ] Comparison of prompt tuned models compared to normal fine tuned models
-- [ ] EDA
-- [ ] Prepare for sprint review
+- [ ] Benchmark t-SNE PCA against TMAP
 - [ ] profit???
 
+It seems like TMAP phase 1 where the k nearest neighbours graph is constructed can be
+redone with another algorithm for higher accuracy
 
+The minhash algorithm is not exact and the seed varying will change the overall layout
+of the tmap visualisation. However, locality of points in the visualisation remain unchanged
+see: https://jcheminf.biomedcentral.com/articles/10.1186/s13321-020-0416-x#MOESM1
+
+Perhaps we pass in enc.batch_from_weight_array() only the static embeddings, and then
+iteratively from_weight_array the learned embeddings afterwards. This would mean that
+the static embeddings always obtain the same jaccard distance among themselves if the seed is set.
+
+We can then check the LSH forest's x,y output coordinates for the static embeddings when
+different learned embeddings are passed in. If the static embedding's positions change, then
+the LSH forest's algorithm is also influenced by the learned embeddings during indexing.
+
+If that is the case then we have a problem, and may have to implement another way to construct
+a weighted c approximate knn graph.
 
 I had some time while waiting for the checkpoint to download
 
