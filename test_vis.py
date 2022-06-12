@@ -43,8 +43,8 @@ def visualise(lf_filename: str, load_lf: bool):
     http://matthewcasperson.blogspot.com/2013/11/minhash-for-dummies.html
     http://infolab.stanford.edu/~bawa/Pub/similarity.pdf
     """
-    dims = 1024
-    enc = tm.Minhash(learned_embeddings.size(dim=1), 69, dims)
+    dims = 512
+    enc = tm.Minhash(learned_embeddings.size(dim=1), seed=69, sample_size=dims)
     lf = tm.LSHForest(dims * 2, 128)
 
     c_labels = np.concatenate([np.ones(original_embeddings.size(dim=0)), np.zeros(learned_embeddings.size(dim=0))])
