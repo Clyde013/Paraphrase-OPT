@@ -30,6 +30,7 @@ TODO:
 - [ ] Finish up C-backend integration of OGDF FMMM algorithm for initial point placements 
   (use https://github.com/N-Coder/ogdf-python library)
 - [ ] Fine tune model directly on paraphrasing.
+- [ ] Build the model for fine tuning directly on the paraphrase dataset. (Use existing implementation? Use huggingface trainer?)
 - [ ] profit???
 
 I had some time while waiting for the checkpoint to download
