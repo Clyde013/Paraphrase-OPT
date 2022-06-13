@@ -5,6 +5,7 @@ from typing import List
 from tqdm import tqdm
 import pandas as pd
 import torch
+import wandb
 from torch.nn.utils.rnn import pad_sequence
 from transformers import GPT2Tokenizer
 
@@ -106,13 +107,16 @@ def benchmark_pairs(filepath, save_path):
 if __name__ == "__main__":
     package_directory = os.path.dirname(os.path.abspath(__file__))
 
-    filename = "1.3b-optimized-tokens=111-samples=100.pkl"
+    filename = "1.3b-optimized-tokens=111-samples=500.pkl"
     model_preds_save_path = "metrics/benchmark_runs/model_preds/"
     benchmark_save_path = "metrics/benchmark_runs/model_benchmarked_results/"
-    checkpoint_path = "training_checkpoints/optimize/soft-opt-epoch=029-val_loss=0.487-optimizer_type=Adam-embedding_n_tokens=111.ckpt"
+    checkpoint_path = "training_checkpoints/07-06-2022-optimize/soft-opt-epoch=029-val_loss=0.487-optimizer_type=Adam-embedding_n_tokens=111.ckpt"
 
     model_name = "facebook/opt-1.3b"
     dataset_size = 500
+
+    wandb.init(project="benchmark_popt", entity="clyde013", name="benchmark_run")
+    wandb.config.update({"embedding_n_tokens": 111}, allow_val_change=True)
 
     print("Datamodule setup.")
     datamodule = ParaCombinedDataModule(model_name, 1, 1000, [ParabankDataModule, ParaNMTDataModule],
