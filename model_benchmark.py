@@ -106,17 +106,17 @@ def benchmark_pairs(filepath, save_path):
 if __name__ == "__main__":
     package_directory = os.path.dirname(os.path.abspath(__file__))
 
-    filename = "1.3b-paracombined-epoch=269-samples=100.pkl"
+    filename = "1.3b-optimized-tokens=111-samples=100.pkl"
     model_preds_save_path = "metrics/benchmark_runs/model_preds/"
     benchmark_save_path = "metrics/benchmark_runs/model_benchmarked_results/"
-    checkpoint_path = "training_checkpoints/01-06-2022-1.3b-paracombined/soft-opt-epoch=269-val_loss=1.862.ckpt"
+    checkpoint_path = "training_checkpoints/optimize/soft-opt-epoch=029-val_loss=0.487-optimizer_type=Adam-embedding_n_tokens=111.ckpt"
 
     model_name = "facebook/opt-1.3b"
-    dataset_size = 100
+    dataset_size = 500
 
     print("Datamodule setup.")
     datamodule = ParaCombinedDataModule(model_name, 1, 1000, [ParabankDataModule, ParaNMTDataModule],
-                                        probabilities=[0.35, 0.65], seed=82765, pre_tokenize=False)
+                                        probabilities=[0.5, 0.5], seed=82765, pre_tokenize=False)
     datamodule.setup()
 
     # get the values from {"source": "...</s>..."} dict and then take only the first as dataset input for model

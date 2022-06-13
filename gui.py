@@ -11,13 +11,14 @@ from soft_prompt_tuning.soft_prompt_opt import ParaphraseOPT
 
 # init
 wandb.init(project="popt-gui", entity="clyde013")
+wandb.config.update({"embedding_n_tokens": 111}, allow_val_change=True)
 AVAIL_GPUS = min(1, torch.cuda.device_count())
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 fits_on_gpu = True
 
 # we want to define the functions without actually calling them, so we wrap them in lambdas
 model_name = "facebook/opt-1.3b"
-checkpoint = r"training_checkpoints/30-05-2022-1.3b/soft-opt-epoch=179-val_loss=1.397.ckpt"
+checkpoint = r"training_checkpoints/optimize/soft-opt-epoch=029-val_loss=0.487-optimizer_type=Adam-embedding_n_tokens=111.ckpt"
 model_type_key = {'OPT1.3B Prompt Fine Tuned': lambda: ParaphraseOPT.load_from_custom_save(model_name, checkpoint),
                   'OPT1.3B Base Model': lambda: OPTForCausalLM.from_pretrained(model_name)}
 # model specific prompt changes
