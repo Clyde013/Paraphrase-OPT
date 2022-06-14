@@ -97,6 +97,11 @@ sequence.
 Some errors may pop up when trying to run the program. "But it works on my machine" yeah it will work on your machine
 when you do these things.
 
+### PyGraphViz Installation Errors (Especially on Windows)
+https://pygraphviz.github.io/documentation/stable/install.html#install
+Cancer. Follow the instructions. Use powershell or anaconda powershell. Restart the terminal/editor.
+
+
 ### Memory Errors
 Who doesn't love training large models? Some errors aren't due to the large model though. Like this one, this one occurs
 if the batch size is too large. Reduce the batch size because huggingface is trying to allocate a continguous block of

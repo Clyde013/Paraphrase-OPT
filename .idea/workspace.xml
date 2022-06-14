@@ -3,9 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="4fb95f3d-bfc6-4b9a-adfb-ca630a397616" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fine_tuning/config-defaults.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/fine_tuning/train_fine_tune.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_fine_tune.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_soft_prompt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EDA_embedding.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/EDA_embedding.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example.html" beforeDir="false" afterPath="$PROJECT_DIR$/example.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -190,9 +190,9 @@
     </configuration>
     <list>
       <item itemvalue="Python.gui" />
+      <item itemvalue="Python.model_benchmark (1)" />
       <item itemvalue="Python.model_benchmark" />
       <item itemvalue="Python.test_vis" />
-      <item itemvalue="Python.model_benchmark (1)" />
       <item itemvalue="Python.train_fine_tune" />
       <item itemvalue="Python.train_soft_prompt" />
     </list>
