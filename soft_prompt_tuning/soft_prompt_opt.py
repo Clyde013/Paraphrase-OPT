@@ -71,8 +71,8 @@ class ParaphraseOPT(LightningModule):
 
         # these inits should be exclusively used for loading from checkpoints
         # see load_from_custom_save for why.
-        self.init_optimizer = None
-        self.init_lr_scheduler = None
+        self.init_optimizer = init_optimizer
+        self.init_lr_scheduler = init_lr_scheduler
 
         self.save_hyperparameters("model_name")
 
