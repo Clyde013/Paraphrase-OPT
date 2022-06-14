@@ -2,12 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4fb95f3d-bfc6-4b9a-adfb-ca630a397616" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/fine_tuning/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/fine_tuning/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/fine_tuning/config-defaults.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/fine_tuning/fine_tune_opt.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/fine_tuning/train_fine_tune.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fine_tuning/config-defaults.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fine_tuning/train_fine_tune.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_fine_tune.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_soft_prompt.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -148,27 +146,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="train" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Paraphrase-OPT" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="train_fine_tune" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Paraphrase-OPT" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -181,7 +158,28 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/fine_tuning/train_fine_tune.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\weipy\OneDrive\Documents\GitHub\Paraphrase-OPT\train_fine_tune.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="train_soft_prompt" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Paraphrase-OPT" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="C:\Users\weipy\OneDrive\Documents\GitHub\Paraphrase-OPT\train_soft_prompt.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -194,16 +192,16 @@
       <item itemvalue="Python.gui" />
       <item itemvalue="Python.model_benchmark" />
       <item itemvalue="Python.test_vis" />
-      <item itemvalue="Python.train" />
       <item itemvalue="Python.model_benchmark (1)" />
       <item itemvalue="Python.train_fine_tune" />
+      <item itemvalue="Python.train_soft_prompt" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.train_fine_tune" />
         <item itemvalue="Python.model_benchmark (1)" />
         <item itemvalue="Python.test_vis" />
-        <item itemvalue="Python.train" />
+        <item itemvalue="Python.train_soft_prompt" />
         <item itemvalue="Python.model_benchmark" />
       </list>
     </recent_temporary>
