@@ -50,19 +50,6 @@ class FineTuneOPT(LightningModule):
 
         return {"optimizer": optimizer, "lr_scheduler": lr_scheduler_config}
 
-    @classmethod
-    def load_from_custom_save(cls, model_name, path):
-        # load the saved checkpoint
-        state_dict = torch.load(path)
-
-        # instantiate lightningmodule with pretrained model
-        model = cls(model_name)
-
-        # load updated state dict into the model
-        model.model.load_state_dict(state_dict, strict=False)
-
-        return model
-
     """
     Note on following hooks (on_train_epoch_start and on_validation_epoch_start):
 

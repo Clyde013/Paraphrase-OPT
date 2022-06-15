@@ -26,7 +26,7 @@ if __name__ == "__main__":
         datamodule.setup()
 
         if (wandb.config["load_from_checkpoint"] is not None) and (os.path.isfile(wandb.config["load_from_checkpoint"])):
-            model = FineTuneOPT.load_from_custom_save(wandb.config["model_name"], wandb.config["load_from_checkpoint"])
+            model = FineTuneOPT.load_from_checkpoint(checkpoint_path=wandb.config["load_from_checkpoint"])
         else:
             model = FineTuneOPT(wandb.config["model_name"])
 

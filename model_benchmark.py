@@ -39,7 +39,7 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_type: s
         if checkpoint is None:
             model = FineTuneOPT(model_name)
         else:
-            model = FineTuneOPT.load_from_custom_save(model_name, checkpoint)
+            model = FineTuneOPT.load_from_checkpoint(checkpoint_path=checkpoint)
     else:
         # angery
         assert False
