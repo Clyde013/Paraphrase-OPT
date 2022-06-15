@@ -3,9 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="4fb95f3d-bfc6-4b9a-adfb-ca630a397616" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fine_tuning/fine_tune_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/fine_tuning/fine_tune_opt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model_benchmark.py" beforeDir="false" afterPath="$PROJECT_DIR$/model_benchmark.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_fine_tune.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_fine_tune.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/EDA_benchmarking-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/EDA_benchmarking-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/EDA_embedding-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/EDA_embedding-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EDA_benchmarking.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/EDA_benchmarking.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EDA_embedding.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/EDA_embedding.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
