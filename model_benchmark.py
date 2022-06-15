@@ -14,6 +14,7 @@ from torchmetrics.text.bleu import BLEUScore
 from torchmetrics.text.rouge import ROUGEScore
 
 from soft_prompt_tuning.soft_prompt_opt import ParaphraseOPT
+from fine_tuning.fine_tune_opt import FineTuneOPT
 from training_datasets.para_nmt.para_nmt import ParaNMTDataModule
 from training_datasets.parabank.parabank import ParabankDataModule
 from training_datasets.paracombined import ParaCombinedDataModule
@@ -26,13 +27,22 @@ format of a dataframe where the first column is the source (model predictions) a
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-def run_model(dataset: List[str], batch_size: int, save_path: str, model_name: str, checkpoint: str = None, append_seq: str = "</s>"):
+def run_model(dataset: List[str], batch_size: int, save_path: str, model_type: str, model_name: str, checkpoint: str = None, append_seq: str = "</s>"):
     # init the dataset
     print("Initialising.")
-    if checkpoint is None:
-        model = ParaphraseOPT(model_name)
+    if model_type == "soft":
+        if checkpoint is None:
+            model = ParaphraseOPT(model_name)
+        else:
+            model = ParaphraseOPT.load_from_custom_save(model_name, checkpoint)
+    elif model_type == "fine-tuned":
+        if checkpoint is None:
+            model = FineTuneOPT(model_name)
+        else:
+            model = FineTuneOPT.load_from_custom_save(model_name, checkpoint)
     else:
-        model = ParaphraseOPT.load_from_custom_save(model_name, checkpoint)
+        # angery
+        assert False
 
     model = model.eval()
     model.to(device)
@@ -110,7 +120,7 @@ if __name__ == "__main__":
     filename = "1.3b-fine-tuned-samples=500.pkl"
     model_preds_save_path = "metrics/benchmark_runs/model_preds/"
     benchmark_save_path = "metrics/benchmark_runs/model_benchmarked_results/"
-    checkpoint_path = "training_checkpoints/fine-tune-opt-epoch=epoch=029-val_loss=val_loss=0.699.ckpt"
+    checkpoint_path = "training_checkpoints/fine-tune/fine-tune-opt-epoch=epoch=029-val_loss=val_loss=0.699.ckpt"
 
     model_name = "facebook/opt-1.3b"
     dataset_size = 500
@@ -129,6 +139,7 @@ if __name__ == "__main__":
     run_model(dataset=dataset,
               batch_size=5,
               save_path=os.path.join(package_directory, model_preds_save_path, filename),
+              model_type="fine-tuned",
               model_name=model_name,
               checkpoint=os.path.join(package_directory, checkpoint_path))
 
