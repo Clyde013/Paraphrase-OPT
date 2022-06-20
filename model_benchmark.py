@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 import wandb
 from torch.nn.utils.rnn import pad_sequence
-from transformers import GPT2Tokenizer
+from transformers import GPT2Tokenizer, BartTokenizer
 
 from metrics.bart_metric import BartScore
 from torchmetrics.text.bleu import BLEUScore
@@ -15,6 +15,8 @@ from torchmetrics.text.rouge import ROUGEScore
 
 from soft_prompt_tuning.soft_prompt_opt import ParaphraseOPT
 from fine_tuning.fine_tune_opt import FineTuneOPT
+from fine_tuning.fine_tune_bart import FineTuneBART
+
 from training_datasets.para_nmt.para_nmt import ParaNMTDataModule
 from training_datasets.parabank.parabank import ParabankDataModule
 from training_datasets.paracombined import ParaCombinedDataModule
@@ -40,13 +42,20 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_type: s
             model = FineTuneOPT(model_name)
         else:
             model = FineTuneOPT.load_from_checkpoint(checkpoint_path=checkpoint)
+    elif model_type == "bart":
+        model = FineTuneBART()
+        model.load()
     else:
-        # angery
+        # suffer
         assert False
 
     model = model.eval()
     model.to(device)
-    tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+
+    if model_type == "bart":
+        tokenizer = BartTokenizer.from_pretrained(model_name)
+    else:
+        tokenizer = GPT2Tokenizer.from_pretrained(model_name)
 
     # pad to the left because the model is autoregressive (anything to the right is ignored)
     tokenizer.padding_side = 'left'
@@ -117,12 +126,12 @@ def benchmark_pairs(filepath, save_path):
 if __name__ == "__main__":
     package_directory = os.path.dirname(os.path.abspath(__file__))
 
-    filename = "1.3b-fine-tuned-samples=500.pkl"
+    filename = "bart-samples=500.pkl"
     model_preds_save_path = "metrics/benchmark_runs/model_preds/"
     benchmark_save_path = "metrics/benchmark_runs/model_benchmarked_results/"
-    checkpoint_path = "training_checkpoints/fine-tune/fine-tune-opt-epoch=epoch=029-val_loss=val_loss=0.699.ckpt"
+    checkpoint_path = ""
 
-    model_name = "facebook/opt-1.3b"
+    model_name = 'facebook/bart-large-cnn'
     dataset_size = 500
 
     wandb.init(project="benchmark_popt", entity="clyde013", name="benchmark_run")
@@ -139,9 +148,10 @@ if __name__ == "__main__":
     run_model(dataset=dataset,
               batch_size=5,
               save_path=os.path.join(package_directory, model_preds_save_path, filename),
-              model_type="fine-tuned",
+              model_type="bart",
               model_name=model_name,
-              checkpoint=os.path.join(package_directory, checkpoint_path))
+              checkpoint=os.path.join(package_directory, checkpoint_path),
+              append_seq="")
 
     benchmark_pairs(os.path.join(package_directory, model_preds_save_path, filename),
                     save_path=os.path.join(package_directory, benchmark_save_path, filename))

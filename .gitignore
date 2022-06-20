@@ -7,3 +7,4 @@ wandb/
 /visualisations/
 
 .env
+/fine_tuning/bart.pth
