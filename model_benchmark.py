@@ -84,7 +84,8 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_type: s
             del batch
 
             # remove the source sentence based on the length of the inputs
-            output_batch = output_batch[:, encoded_inputs['input_ids'].size(dim=-1):]
+            if model_type != "bart":
+                output_batch = output_batch[:, encoded_inputs['input_ids'].size(dim=-1):]
 
             # decode outputs, after removal of source sentence should only remain eos token and padding on the right
             # which are omitted by skip_special_tokens=True
