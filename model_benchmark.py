@@ -62,10 +62,7 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_type: s
 
     print("Encoding dataset.")
     # append a sequence to the end of every input (could be </s> token or prompt like "paraphrase:") and encode all
-    if model_type == "bart":
-        encoded_inputs = tokenizer([i + append_seq for i in dataset], max_length=1024, return_tensors='pt')
-    else:
-        encoded_inputs = tokenizer([i + append_seq for i in dataset], padding=True, return_tensors='pt')
+    encoded_inputs = tokenizer([i + append_seq for i in dataset], padding=True, return_tensors='pt')
 
     print("Generating model predictions.")
     """ Yeah. Don't pass .generate() all the encoded inputs at once.
@@ -92,7 +89,7 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_type: s
 
             # decode outputs, after removal of source sentence should only remain eos token and padding on the right
             # which are omitted by skip_special_tokens=True
-            outputs = tokenizer.batch_decode(output_batch, skip_special_tokens=True)
+            outputs = tokenizer.batch_decode(output_batch, skip_special_tokens=True, clean_up_tokenization_spaces=False)
             output_sequences.extend(outputs)
 
     print("Dataframe saving.")
@@ -136,6 +133,7 @@ if __name__ == "__main__":
     checkpoint_path = ""
 
     model_name = 'facebook/bart-large-cnn'
+    model_type = "bart"
     dataset_size = 500
 
     wandb.init(project="benchmark_popt", entity="clyde013", name="benchmark_run")
@@ -147,17 +145,18 @@ if __name__ == "__main__":
     datamodule.setup()
 
     # get the values from {"source": "...</s>..."} dict and then take only the first as dataset input for model
-    dataset = [i["source"].split("</s>")[0] for i in list(datamodule.dataset.take(dataset_size))]
+    if model_type == "bart":
+        dataset = [i["source"].split("<|endoftext|>")[0] for i in list(datamodule.dataset.take(dataset_size))]
+    else:
+        dataset = [i["source"].split("</s>")[0] for i in list(datamodule.dataset.take(dataset_size))]
 
-    """
     run_model(dataset=dataset,
               batch_size=5,
               save_path=os.path.join(package_directory, model_preds_save_path, filename),
-              model_type="bart",
+              model_type=model_type,
               model_name=model_name,
               checkpoint=os.path.join(package_directory, checkpoint_path),
               append_seq="")
-    """
 
     benchmark_pairs(os.path.join(package_directory, model_preds_save_path, filename),
                     save_path=os.path.join(package_directory, benchmark_save_path, filename))
