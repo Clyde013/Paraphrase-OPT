@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="4fb95f3d-bfc6-4b9a-adfb-ca630a397616" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EDA_benchmarking.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/EDA_benchmarking.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/model_benchmark.py" beforeDir="false" afterPath="$PROJECT_DIR$/model_benchmark.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -223,7 +224,7 @@
       <option name="presentableId" value="Default" />
       <updated>1653358281680</updated>
       <workItem from="1655340772688" duration="9035000" />
-      <workItem from="1655687748739" duration="2205000" />
+      <workItem from="1655687748739" duration="3441000" />
     </task>
     <servers />
   </component>
@@ -289,7 +290,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/model_benchmark.py</url>
-          <line>64</line>
+          <line>67</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
       </breakpoints>

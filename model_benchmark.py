@@ -62,7 +62,10 @@ def run_model(dataset: List[str], batch_size: int, save_path: str, model_type: s
 
     print("Encoding dataset.")
     # append a sequence to the end of every input (could be </s> token or prompt like "paraphrase:") and encode all
-    encoded_inputs = tokenizer([i + append_seq for i in dataset], padding=True, return_tensors='pt')
+    if model_type == "bart":
+        encoded_inputs = tokenizer([i + append_seq for i in dataset], max_length=1024, return_tensors='pt')
+    else:
+        encoded_inputs = tokenizer([i + append_seq for i in dataset], padding=True, return_tensors='pt')
 
     print("Generating model predictions.")
     """ Yeah. Don't pass .generate() all the encoded inputs at once.
@@ -146,6 +149,7 @@ if __name__ == "__main__":
     # get the values from {"source": "...</s>..."} dict and then take only the first as dataset input for model
     dataset = [i["source"].split("</s>")[0] for i in list(datamodule.dataset.take(dataset_size))]
 
+    """
     run_model(dataset=dataset,
               batch_size=5,
               save_path=os.path.join(package_directory, model_preds_save_path, filename),
@@ -153,6 +157,7 @@ if __name__ == "__main__":
               model_name=model_name,
               checkpoint=os.path.join(package_directory, checkpoint_path),
               append_seq="")
+    """
 
     benchmark_pairs(os.path.join(package_directory, model_preds_save_path, filename),
                     save_path=os.path.join(package_directory, benchmark_save_path, filename))
