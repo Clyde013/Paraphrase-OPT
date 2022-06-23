@@ -89,8 +89,8 @@ class BartScore(Metric):
 
 def main():
     bartscore = BartScore()
-    score = bartscore(['This is interesting.', 'This is a good idea.'],
-                      ['This is very curious.', 'Sounds like a terrific formulation of human thought.'])
+    score = bartscore(['This is interesting.', 'This is interesting.'],
+                      ['This is very curious.', 'This is incredibly strange.'])
     print(score)
 
 
